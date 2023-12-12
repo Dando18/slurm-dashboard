@@ -67,49 +67,51 @@ export class SlurmScheduler implements Scheduler {
             } else {
                 return [];
             }
+        }, (error) => {
+            vscode.window.showErrorMessage(`Failed to get queue.\nError: ${error}`);
+            return [];
         });
     }
 
     public cancelJob(job: Job): void {
         try {
-            //execSync(`scancel ${job.id}`);
-            console.log(`scancel ${job.id}`);
+            execSync(`scancel ${job.id}`);
+            //console.log(`scancel ${job.id}`);
         } catch (error) {
-            console.log(error);
+            vscode.window.showErrorMessage(`Failed to cancel job ${job.id}.\nError: ${error}`);
         }
     }
 
     public submitJob(jobScript: string|vscode.Uri): void {
         try {
             /* todo -- run from working directory of script */
-            //execSync(`sbatch ${jobScript}`);
-            console.log(`sbatch ${jobScript}`);
+            execSync(`sbatch ${jobScript}`);
+            //console.log(`sbatch ${jobScript}`);
         } catch (error) {
-            console.log(error);
+            vscode.window.showErrorMessage(`Failed to submit job ${jobScript}.\nError: ${error}`);
         }
     }
 
     private getQueueOutput(): Thenable<string|undefined> {
         const columnsString = this.columns.join(",");
         const command = `squeue --me --noheader -O ${columnsString}`;
-        console.log(command);
 
-        const workspaceFolder = vscode.workspace.workspaceFolders![0];
-        const filePath = vscode.Uri.joinPath(workspaceFolder.uri, "squeue.out");
+        //console.log(command);
+        //const workspaceFolder = vscode.workspace.workspaceFolders![0];
+        //const filePath = vscode.Uri.joinPath(workspaceFolder.uri, "squeue.out");
+        //return vscode.workspace.openTextDocument(filePath).then((doc) => doc.getText());
 
-        return vscode.workspace.openTextDocument(filePath).then((doc) => doc.getText());
-
-        //return new Promise((resolve, reject) => {
-        //    exec(command, (error, stdout, stderr) => {
-        //        if (error) {
-        //            reject(error);
-        //        } else if (stderr) {
-        //            reject(stderr);
-        //        } else {
-        //            resolve(stdout);
-        //        }
-        //    });
-        //});
+        return new Promise((resolve, reject) => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    reject(error);
+                } else if (stderr) {
+                    reject(stderr);
+                } else {
+                    resolve(stdout);
+                }
+            });
+        });
     }
 
     private parseQueueOutput(output: string): Job[] {
