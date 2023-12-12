@@ -1,140 +1,220 @@
 import * as vscode from 'vscode';
-import { execSync } from 'child_process';
-import { WallTime } from './time';
+import { Job, Scheduler } from './scheduler';
+import { resolvePathRelativeToWorkspace } from './fileutilities';
 
 
-export class Job extends vscode.TreeItem {
+export class InfoItem extends vscode.TreeItem {
+    constructor(public column: string, public value: string) {
+        super(column, vscode.TreeItemCollapsibleState.None);
+        this.description = value;
+        this.tooltip = `${column}: ${value}`;
+    }
+}
+
+export class JobItem extends vscode.TreeItem {
 
     constructor(
-        public id: string,
-        public name: string, 
-        public status: string, 
-        public queue?: string, 
-        public batchFile?: string, 
-        public maxTime?: WallTime, 
-        public curTime?: WallTime
+        public job: Job,
+        private readonly showInfo: boolean = false,
+        public readonly contextValue: string = "jobItem"
     ) {
-        super(name, vscode.TreeItemCollapsibleState.None);
-        this.description = `${curTime} / ${maxTime}`;
+        super(job.name, (showInfo) ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
+        this.description = `${job.curTime} / ${job.maxTime}`;
         this.iconPath = this.getIconPath();
-        this.tooltip = `${name} (${status})`;
+        this.tooltip = `${job.id} (${job.status})`;
     }
 
     getIconPath(): string | vscode.Uri | vscode.ThemeIcon | undefined {
-        if (this.status === "RUNNING") {
+        if (this.job.status === "RUNNING") {
             return new vscode.ThemeIcon("play");
-        } else if (this.status === "PENDING") {
+        } else if (this.job.status === "PENDING") {
             return new vscode.ThemeIcon("ellipsis");
-        } else if (this.status === "COMPLETED") {
+        } else if (this.job.status === "COMPLETED" || this.job.status === "COMPLETING") {
             return new vscode.ThemeIcon("check");
+        } else if (this.job.status === "CANCELLED" || this.job.status === "FAILED") {
+            return new vscode.ThemeIcon("error");
+        } else if (this.job.status === "TIMEOUT") {
+            return new vscode.ThemeIcon("warning");
         } else {
             return undefined;
         }
     }
 
-    public getTimeLeft(): WallTime|undefined {
-        if (this.maxTime && this.curTime) {
-            return new WallTime(0, 0, this.maxTime.absDiffSeconds(this.curTime));
-        } else {
-            return undefined;
+    public getInfoItems(): InfoItem[] {
+        if (!this.showInfo) {
+            return [];
         }
+
+        let infoItems: InfoItem[] = [
+            new InfoItem("id", this.job.id),
+            new InfoItem("name", this.job.name),
+            new InfoItem("status", this.job.status)
+        ];
+        if (this.job.queue) {
+            infoItems.push(new InfoItem("queue", this.job.queue));
+        }
+        if (this.job.batchFile) {
+            infoItems.push(new InfoItem("batch file", this.job.batchFile));
+        }
+        if (this.job.maxTime) {
+            infoItems.push(new InfoItem("max time", this.job.maxTime.toString()));
+        }
+        if (this.job.curTime) {
+            infoItems.push(new InfoItem("cur time", this.job.curTime.toString()));
+        }
+        return infoItems;
     }
 }
 
-export class JobQueueProvider implements vscode.TreeDataProvider<Job> {
-    constructor(private dataProvider: JobQueueDataProvider) { }
+export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoItem> {
+    private jobItems: JobItem[] = [];
+    private autoRefreshTimer: NodeJS.Timeout|null = null;
+    
+    private _onDidChangeTreeData: vscode.EventEmitter<JobItem|InfoItem|undefined|null|void> = new vscode.EventEmitter<JobItem|InfoItem|undefined|null|void>();
+    readonly onDidChangeTreeData: vscode.Event<JobItem|InfoItem|undefined|null|void> = this._onDidChangeTreeData.event;
+  
+    constructor(private scheduler: Scheduler) { }
 
-    getTreeItem(element: Job): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: JobItem|InfoItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
 
-    getChildren(element?: Job): vscode.ProviderResult<Job[]> {
+    getChildren(element?: JobItem|InfoItem): vscode.ProviderResult<JobItem[]|InfoItem[]> {
         if (element) {
-            return Promise.resolve([]);
-        } else {
-            return Promise.resolve(this.dataProvider.getJobs());
-        }
-    }
-}
-
-interface JobQueueDataProvider {
-    getJobs(): Job[];
-}
-
-class SchedulerColumn {
-    constructor(public name: string, public chars: number) {}
-
-    public toString(): string {
-        return `${this.name}:${this.chars}`;
-    }
-}
-
-export class SlurmDataProvider implements JobQueueDataProvider {
-    private columns: SchedulerColumn[] = [
-        new SchedulerColumn("JobID", 15),
-        new SchedulerColumn("Name", 35),
-        new SchedulerColumn("State", 25),
-        new SchedulerColumn("Partition", 25),
-        new SchedulerColumn("STDOUT", 255),
-        new SchedulerColumn("Command", 255),
-        new SchedulerColumn("TimeLimit", 15),
-        new SchedulerColumn("TimeUsed", 15),
-        new SchedulerColumn("QOS", 25),
-    ];
-
-    private getQueueOutput(): string|undefined {
-        let columnsString = this.columns.join(",");
-        try {
-            let output = execSync(`squeue --me --noheader -O ${columnsString}`);
-            return output.toString();
-        } catch (error) {
-            console.log(error);
-            return undefined;
-        }
-    }
-
-    private parseQueueOutput(output: string): Job[] {
-        let jobs: Job[] = [];
-        /* iterate thru each line of output */
-        output.split("\n").forEach((line) => {
-            /* split line into columns by whitespace */
-            let columns = line.split(/\s+/);
-
-            /* parse columns into job */
-            let results: {[key: string]: string} = {};
-            const zip = (a: any, b: any) => a.map((k: any, i: any) => [k, b[i]]);
-            for (let [col, val] of zip(this.columns, columns)) {
-                results[col.name] = val;
+            if (element instanceof JobItem) {
+                return Promise.resolve(element.getInfoItems());
+            } else {
+                return Promise.resolve([]);
             }
-
-            /* create job */
-            let job = new Job(
-                results["JobID"],
-                results["Name"],
-                results["State"],
-                results["Partition"],
-                results["Command"],
-                WallTime.fromString(results["TimeLimit"]),
-                WallTime.fromString(results["TimeUsed"])
-            );
-            jobs.push(job);
-
-        });
-
-        return jobs;
+        } else {
+            const showInfo = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.showJobInfo", false);
+            return this.scheduler.getQueue().then((jobs) => {
+                const items = jobs.map((job) => new JobItem(job, showInfo));
+                this.jobItems = items;
+                return items;
+            });
+        }
     }
 
-    public getJobs(): Job[] {
-        //let jobs: Job[] = [];
-        //jobs.push(new Job("1", "job1", "RUNNING", "batch", "batch.sh", WallTime.fromString("00:01:00"), WallTime.fromString("00:00:15")));
-        //jobs.push(new Job("2", "job2", "PENDING", "batch", "batch.sh", WallTime.fromString("00:01:00"), WallTime.fromString("00:00:00")));
-        //jobs.push(new Job("3", "job3", "COMPLETED", "batch", "batch.sh", WallTime.fromString("00:01:00"), WallTime.fromString("00:01:00")));
-        //return jobs;
-        let output = this.getQueueOutput();
-        if (output) {
-            return this.parseQueueOutput(output);
+    public register(context: vscode.ExtensionContext): void {
+        let jobView = vscode.window.registerTreeDataProvider('job-dashboard', this);
+        context.subscriptions.push(jobView);
+        vscode.commands.registerCommand('job-dashboard.refresh', () => this.refresh());
+        vscode.commands.registerCommand('job-dashboard.cancel-all', () => this.cancelAll());
+        vscode.commands.registerCommand('job-dashboard.cancel', (jobItem: JobItem) => this.cancel(jobItem));
+        vscode.commands.registerCommand('job-dashboard.cancel-and-resubmit', (jobItem: JobItem) => this.cancelAndResubmit(jobItem));
+        vscode.commands.registerCommand('job-dashboard.show-output', (jobItem: JobItem) => this.showOutput(jobItem));
+        vscode.commands.registerCommand('job-dashboard.show-source', (jobItem: JobItem) => this.showSource(jobItem));
+
+        this.initAutoRefresh();
+        vscode.workspace.onDidChangeConfiguration((e) => {
+            if (e.affectsConfiguration("slurm-dashboard.job-dashboard.refreshInterval")) {
+                this.initAutoRefresh();
+            }
+        });
+    }
+
+    public refresh(): void {
+        this.jobItems = [];
+        this._onDidChangeTreeData.fire();
+    }
+
+    private initAutoRefresh(): void {
+        if (this.autoRefreshTimer) {
+            clearInterval(this.autoRefreshTimer);
+        }
+
+        const refreshInterval: number|null|undefined = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.refreshInterval");
+        if (refreshInterval) {
+            this.autoRefreshTimer = setInterval(() => this.refresh(), refreshInterval*1000);
+        }
+    }
+
+    private showOutput(jobItem: JobItem): void {
+        if (jobItem.job.outputFile) {
+            const fpath = resolvePathRelativeToWorkspace(jobItem.job.outputFile);
+            vscode.workspace.openTextDocument(fpath).then((doc) => {
+                vscode.window.showTextDocument(doc);
+            });
         } else {
-            return [];
+            vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
+        }
+    }
+
+    private showSource(jobItem: JobItem): void {
+        if (jobItem.job.batchFile) {
+            const fpath = resolvePathRelativeToWorkspace(jobItem.job.batchFile);
+            vscode.workspace.openTextDocument(fpath).then((doc) => {
+                vscode.window.showTextDocument(doc);
+            });
+        } else {
+            vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
+        }
+    }
+
+    private cancel(jobItem: JobItem): Thenable<boolean> {
+        const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.promptBeforeCancel", true);
+        let cancelFunc = () => {
+            this.scheduler.cancelJob(jobItem.job);
+            setTimeout(() => this.refresh(), 500);
+        };
+
+        if (shouldPrompt) {
+            return vscode.window.showInformationMessage(`Are you sure you want to cancel job ${jobItem.job.id}?`, "Yes", "No").then((selection) => {
+                if (selection === "Yes") {
+                    cancelFunc();
+                }
+                return selection === "Yes";
+            });
+        } else {
+            cancelFunc();
+            return Promise.resolve(true);
+        }
+    }
+
+    private cancelAndResubmit(jobItem: JobItem): Thenable<boolean> {
+        if (!jobItem.job.batchFile) {
+            vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
+            return Promise.resolve(false);
+        }
+
+        const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.promptBeforeCancel", true);
+        let cancelAndResubmitFunc = () => {
+            this.scheduler.cancelJob(jobItem.job);
+            this.scheduler.submitJob(jobItem.job.batchFile!);
+            setTimeout(() => this.refresh(), 500);
+        };
+
+        if (shouldPrompt) {
+            return vscode.window.showInformationMessage(`Are you sure you want to cancel job ${jobItem.job.id} and resubmit?`, "Yes", "No").then((selection) => {
+                if (selection === "Yes") {
+                    cancelAndResubmitFunc();
+                }
+                return selection === "Yes";
+            });
+        } else {
+            cancelAndResubmitFunc();
+            return Promise.resolve(true);
+        }
+    }
+
+    private cancelAll(): Thenable<boolean> {
+        const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.promptBeforeCancelAll", true);
+        let cancelAllFunc = () => {
+            this.jobItems.forEach((jobItem) => this.scheduler.cancelJob(jobItem.job));
+            setTimeout(() => this.refresh(), 500);
+        };
+
+        if (shouldPrompt) {
+            return vscode.window.showInformationMessage("Are you sure you want to cancel all jobs?", "Yes", "No").then((selection) => {
+                if (selection === "Yes") {
+                    cancelAllFunc();
+                }
+                return selection === "Yes";
+            });
+        } else {
+            cancelAllFunc();
+            return Promise.resolve(true);
         }
     }
 }

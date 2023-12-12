@@ -83,10 +83,6 @@
         {
           "id": "submit-dashboard",
           "name": "Submit Jobs"
-        },
-        {
-          "id": "allocation-dashboard",
-          "name": "Allocation"
         }
       ]
     },
@@ -116,35 +112,65 @@
       "view/item/context": [
         {
           "command": "job-dashboard.cancel",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "job-dashboard.cancel-and-resubmit",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "job-dashboard.show-output",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "job-dashboard.show-source",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "submit-dashboard.submit",
           "when": "view == submit-dashboard",
           "group": "inline"
-        },
-        {
-          "command": "submit-dashboard.show-source",
-          "when": "view == submit-dashboard",
-          "group": "inline"
         }
       ]
+    },
+    "configuration": {
+      "title": "Slurm Dashboard",
+      "properties": {
+        "slurm-dashboard.job-dashboard.showJobInfo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show all job metadata in the job list."
+        },
+        "slurm-dashboard.job-dashboard.promptBeforeCancel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt before cancelling a job."
+        },
+        "slurm-dashboard.job-dashboard.promptBeforeCancelAll": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt before cancelling all jobs."
+        },
+        "slurm-dashboard.job-dashboard.refreshInterval": {
+          "type": ["number", "null"],
+          "default": 300,
+          "description": "How many seconds between refreshing job queue. Set to null to disable automatic refresh."
+        },
+        "slurm-dashboard.submit-dashboard.jobScriptExtensions": {
+          "type": "array",
+          "default": [".slurm", ".sbatch", ".job"],
+          "description": "File extensions used to identify job scripts."
+        },
+        "slurm-dashboard.submit-dashboard.promptBeforeSubmitAll": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt before submitting all job scripts."
+        }
+      }
     }
   },
   "scripts": {

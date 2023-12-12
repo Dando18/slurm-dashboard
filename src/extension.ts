@@ -1,15 +1,14 @@
 import * as vscode from 'vscode';
-import { SlurmDataProvider, JobQueueProvider } from './jobs';
+import { SlurmScheduler } from './scheduler';
+import { JobQueueProvider } from './jobs';
 import { JobScriptProvider } from './jobscripts';
 
 export function activate(context: vscode.ExtensionContext) {
 
-	let slurmDataProvider = new SlurmDataProvider();
-	let jobView = vscode.window.registerTreeDataProvider('job-dashboard', new JobQueueProvider(slurmDataProvider));
-	context.subscriptions.push(jobView);
+	let scheduler = new SlurmScheduler();
+	new JobQueueProvider(scheduler).register(context);
 
-	let submitView = vscode.window.registerTreeDataProvider('submit-dashboard', new JobScriptProvider());
-	context.subscriptions.push(submitView);
+	new JobScriptProvider(scheduler).register(context);
 }
 
 // This method is called when your extension is deactivated
