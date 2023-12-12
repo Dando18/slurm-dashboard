@@ -12,3 +12,10 @@ export function resolvePathRelativeToWorkspace(fpath: string): vscode.Uri {
         return vscode.Uri.file(fpath);
     }
 }
+
+/**
+ * Get the parent directory of a file.
+ */
+export function getParentDirectory(fpath: string): string {
+    return fpath.split("/").slice(0, -1).join("/");
+}

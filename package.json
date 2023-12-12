@@ -169,6 +169,16 @@
           "type": "boolean",
           "default": true,
           "description": "Prompt before submitting all job scripts."
+        },
+        "slurm-dashboard.setJobWorkingDirectoryToScriptDirectory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Set the working directory of a job to the directory containing the job script."
+        },
+        "slurm-dashboard.backend": {
+          "type": "string",
+          "default": "slurm",
+          "description": "The backend to use for submitting jobs. Available choices: slurm, debug."
         }
       }
     }

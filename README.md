@@ -1,6 +1,6 @@
-# slurm-dashboard README
+# slurm-dashboard 
 
-This is the README for your extension "slurm-dashboard". After writing up a brief description, we recommend including the following sections.
+A dashboard for interacting with the Slurm workload manager.
 
 ## Features
 

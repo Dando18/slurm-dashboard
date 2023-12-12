@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { execSync, exec } from 'child_process';
 import { WallTime } from "./time";
+import { getParentDirectory } from './fileutilities';
 
 export class Job {
     constructor(
@@ -76,7 +77,6 @@ export class SlurmScheduler implements Scheduler {
     public cancelJob(job: Job): void {
         try {
             execSync(`scancel ${job.id}`);
-            //console.log(`scancel ${job.id}`);
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to cancel job ${job.id}.\nError: ${error}`);
         }
@@ -84,9 +84,23 @@ export class SlurmScheduler implements Scheduler {
 
     public submitJob(jobScript: string|vscode.Uri): void {
         try {
-            /* todo -- run from working directory of script */
-            execSync(`sbatch ${jobScript}`);
-            //console.log(`sbatch ${jobScript}`);
+            const setCWD = vscode.workspace.getConfiguration("slurm-dashboard").get("setJobWorkingDirectoryToScriptDirectory", true);
+
+            let jobScriptPath: string;
+            if (typeof jobScript === "string") {
+                jobScriptPath = jobScript;
+            } else {
+                jobScriptPath = jobScript.fsPath;
+            }
+
+            let cwdArg = "";
+            if (setCWD) {
+                const cwd = getParentDirectory(jobScriptPath);
+                cwdArg = `--chdir=${cwd}`;
+            }
+
+            execSync(`sbatch ${jobScriptPath} ${cwdArg}`);
+            
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to submit job ${jobScript}.\nError: ${error}`);
         }
@@ -95,11 +109,6 @@ export class SlurmScheduler implements Scheduler {
     private getQueueOutput(): Thenable<string|undefined> {
         const columnsString = this.columns.join(",");
         const command = `squeue --me --noheader -O ${columnsString}`;
-
-        //console.log(command);
-        //const workspaceFolder = vscode.workspace.workspaceFolders![0];
-        //const filePath = vscode.Uri.joinPath(workspaceFolder.uri, "squeue.out");
-        //return vscode.workspace.openTextDocument(filePath).then((doc) => doc.getText());
 
         return new Promise((resolve, reject) => {
             exec(command, (error, stdout, stderr) => {
@@ -116,6 +125,7 @@ export class SlurmScheduler implements Scheduler {
 
     private parseQueueOutput(output: string): Job[] {
         let jobs: Job[] = [];
+
         /* iterate thru each line of output */
         output.split("\n").forEach((line) => {
             if (line === undefined || line === "") {
@@ -150,4 +160,39 @@ export class SlurmScheduler implements Scheduler {
         return jobs;
     }
 
+}
+
+export class Debug implements Scheduler {
+    private readonly jobs: Job[] = [
+        new Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 30, 0), new WallTime(0, 12, 43)),
+        new Job("2", "job2", "PENDING", "debug", "job2.sh", "job2.out", new WallTime(1, 20, 40), new WallTime(0, 0, 0)),
+        new Job("3", "job3", "COMPLETED", "debug", "job3.sh", "job3.out", new WallTime(7, 0, 0), new WallTime(7, 0, 0)),
+        new Job("4", "job4", "TIMEOUT", "debug", "job4.sh", "job4.out", new WallTime(1, 30, 0), new WallTime(1, 30, 0)),
+        new Job("5", "job5", "CANCELLED", "debug", "job5.sh", "job5.out", new WallTime(23, 59, 59), new WallTime(0, 0, 0)),
+        new Job("6", "job6", "FAILED", "debug", "job6.sh", "job6.out", new WallTime(0, 5, 0), new WallTime(0, 0, 0)),
+    ];
+
+    public getQueue(): Thenable<Job[]> {
+        return Promise.resolve(this.jobs);
+    }
+
+    public cancelJob(job: Job): void {
+        vscode.window.showInformationMessage(`Cancel job ${job.id}`);
+    }
+
+    public submitJob(jobScript: string|vscode.Uri): void {
+        vscode.window.showInformationMessage(`Submit job ${jobScript}`);
+    }
+}
+
+export function getScheduler(): Scheduler {
+    const schedulerType = vscode.workspace.getConfiguration("slurm-dashboard").get("backend", "slurm");
+    if (schedulerType === "slurm") {
+        return new SlurmScheduler();
+    } else if (schedulerType === "debug") {
+        return new Debug();
+    } else {
+        vscode.window.showErrorMessage(`Unknown scheduler type: ${schedulerType}. Defaulting to slurm.`);
+        return new SlurmScheduler();
+    }
 }

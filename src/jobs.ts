@@ -135,6 +135,8 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
             const fpath = resolvePathRelativeToWorkspace(jobItem.job.outputFile);
             vscode.workspace.openTextDocument(fpath).then((doc) => {
                 vscode.window.showTextDocument(doc);
+            }, (error) => {
+                vscode.window.showErrorMessage(`Failed to open output file ${jobItem.job.outputFile}.\n${error}`);
             });
         } else {
             vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
@@ -146,6 +148,8 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
             const fpath = resolvePathRelativeToWorkspace(jobItem.job.batchFile);
             vscode.workspace.openTextDocument(fpath).then((doc) => {
                 vscode.window.showTextDocument(doc);
+            }, (error) => {
+                vscode.window.showErrorMessage(`Failed to open batch file ${jobItem.job.batchFile}.\n${error}`);
             });
         } else {
             vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
