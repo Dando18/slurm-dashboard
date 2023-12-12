@@ -12,6 +12,7 @@
     "type": "git",
     "url": "https://github.com/Dando18/slurm-dashboard/"
   },
+  "icon": "images/icon.png",
   "license": "Apache-2.0",
   "engines": {
     "vscode": "^1.85.0"
