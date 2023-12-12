@@ -1,8 +1,19 @@
 {
   "name": "slurm-dashboard",
   "displayName": "Slurm Dashboard",
-  "description": "A dashboard for the Slurm batch scheduler.",
+  "publisher": "danielnichols",
+  "description": "A dashboard for the Slurm workload manager.",
   "version": "0.0.1",
+  "author": {
+    "name": "Daniel Nichols",
+    "url": "https://cs.umd.edu/~dnicho"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dando18/slurm-dashboard/"
+  },
+  "icon": "images/icon.png",
+  "license": "Apache-2.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -70,7 +81,7 @@
         {
           "id": "slurm-dashboard",
           "title": "Slurm Dashboard",
-          "icon": "$(list-unordered)"
+          "icon": "$(group-by-ref-type)"
         }
       ]
     },
@@ -83,10 +94,6 @@
         {
           "id": "submit-dashboard",
           "name": "Submit Jobs"
-        },
-        {
-          "id": "allocation-dashboard",
-          "name": "Allocation"
         }
       ]
     },
@@ -116,35 +123,75 @@
       "view/item/context": [
         {
           "command": "job-dashboard.cancel",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "job-dashboard.cancel-and-resubmit",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "job-dashboard.show-output",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "job-dashboard.show-source",
-          "when": "view == job-dashboard",
+          "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },
         {
           "command": "submit-dashboard.submit",
           "when": "view == submit-dashboard",
           "group": "inline"
-        },
-        {
-          "command": "submit-dashboard.show-source",
-          "when": "view == submit-dashboard",
-          "group": "inline"
         }
       ]
+    },
+    "configuration": {
+      "title": "Slurm Dashboard",
+      "properties": {
+        "slurm-dashboard.job-dashboard.showJobInfo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show all job metadata in the job list."
+        },
+        "slurm-dashboard.job-dashboard.promptBeforeCancel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt before cancelling a job."
+        },
+        "slurm-dashboard.job-dashboard.promptBeforeCancelAll": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt before cancelling all jobs."
+        },
+        "slurm-dashboard.job-dashboard.refreshInterval": {
+          "type": ["number", "null"],
+          "default": 300,
+          "description": "How many seconds between refreshing job queue. Set to null to disable automatic refresh."
+        },
+        "slurm-dashboard.submit-dashboard.jobScriptExtensions": {
+          "type": "array",
+          "default": [".slurm", ".sbatch", ".job"],
+          "description": "File extensions used to identify job scripts."
+        },
+        "slurm-dashboard.submit-dashboard.promptBeforeSubmitAll": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt before submitting all job scripts."
+        },
+        "slurm-dashboard.setJobWorkingDirectoryToScriptDirectory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Set the working directory of a job to the directory containing the job script."
+        },
+        "slurm-dashboard.backend": {
+          "type": "string",
+          "default": "slurm",
+          "description": "The backend to use for submitting jobs. Available choices: slurm, debug."
+        }
+      }
     }
   },
   "scripts": {
@@ -153,7 +200,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "deploy": "vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",

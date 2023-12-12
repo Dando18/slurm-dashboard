@@ -1,71 +1,49 @@
-# slurm-dashboard README
+# Slurm Dashboard
 
-This is the README for your extension "slurm-dashboard". After writing up a brief description, we recommend including the following sections.
+A dashboard for interacting with the Slurm workload manager. It allows you to
+see running jobs, cancel jobs, submit new jobs, and more.
+
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+There are two main views in this extension: Job Queue and Job Scripts. The first
+view is a list of all current user jobs in the queue. Actions are provided for
+canceling, resubmitting, and inspecting the jobs. The second view shows all
+detected job scripts and provides actions for inspecting and/or running them.
+These views are show in the highlight below.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+![Overview](images/overview.gif)
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+This extension requires Slurm to be on the system where the workspace is
+located. Currently it only works with Slurm, but PBS, BSUB, and Flux support is
+planned.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `slurm-dashboard.job-dashboard.showJobInfo`: Show all job metadata in the job list. Default: `false`
+* `slurm-dashboard.job-dashboard.promptBeforeCancel`: Prompt user before canceling a job. Default: `true`
+* `slurm-dashboard.job-dashboard.promptBeforeCancelAll`: Prompt user before cancelling all jobs. Default: `true`
+* `slurm-dashboard.job-dashboard.refreshInterval`: How many seconds between refreshes of the job queue view. Set to `null` to turn off auto-refresh. Default: `300`
+* `slurm-dashboard.submit-dashboard.jobScriptExtensions`: File extensions used to identify job scripts. Default: `[".sbatch", ".slurm", ".job"]`
+* `slurm-dashboard.submit-dashboard.promptBeforeSubmitAll`: Prompt user before submitting all job scripts. Default: `true`
+* `slurm-dashboard.setJobWorkingDirectoryToScriptDirectory`: Launch job scripts with the working directory as the location of the job script. Default: `true`
+* `slurm-dashboard.backend`: Scheduler backend. Choices: `slurm`, `debug`. Default: `slurm`
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+The following issues are known:
+
+* Some Slurm configurations will silently fail when calling `sbatch` from a VSCode extension. This means the _submit job_ actions will not work, but no errors will be shown since Slurm silently fails. It is unknown what causes this.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
+- Slurm support
+- Job queue view
+- Job script view
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
