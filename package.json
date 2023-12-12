@@ -1,0 +1,171 @@
+{
+  "name": "slurm-dashboard",
+  "displayName": "Slurm Dashboard",
+  "description": "A dashboard for the Slurm batch scheduler.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": ["workspace"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "job-dashboard.refresh",
+        "title": "Refresh Job List",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "job-dashboard.cancel-all",
+        "title": "Cancel All Jobs",
+        "icon": "$(x)"
+      },
+      {
+        "command": "job-dashboard.cancel",
+        "title": "Cancel Job",
+        "icon": "$(close)"
+      },
+      {
+        "command": "job-dashboard.cancel-and-resubmit",
+        "title": "Cancel and Resubmit Job",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "job-dashboard.show-output",
+        "title": "Show Job Output",
+        "icon": "$(output)"
+      },
+      {
+        "command": "job-dashboard.show-source",
+        "title": "Show Job Source",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "submit-dashboard.refresh",
+        "title": "Refresh Job Script List",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "submit-dashboard.show-source",
+        "title": "Show Job Source",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "submit-dashboard.submit",
+        "title": "Submit Job",
+        "icon": "$(run)"
+      },
+      {
+        "command": "submit-dashboard.submit-all",
+        "title": "Submit All Jobs",
+        "icon": "$(run-all)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "slurm-dashboard",
+          "title": "Slurm Dashboard",
+          "icon": "$(list-unordered)"
+        }
+      ]
+    },
+    "views": {
+      "slurm-dashboard": [
+        {
+          "id": "job-dashboard",
+          "name": "Jobs"
+        },
+        {
+          "id": "submit-dashboard",
+          "name": "Submit Jobs"
+        },
+        {
+          "id": "allocation-dashboard",
+          "name": "Allocation"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "job-dashboard.refresh",
+          "when": "view == job-dashboard",
+          "group": "navigation"
+        },
+        {
+          "command": "job-dashboard.cancel-all",
+          "when": "view == job-dashboard",
+          "group": "navigation"
+        },
+        {
+          "command": "submit-dashboard.refresh",
+          "when": "view == submit-dashboard",
+          "group": "navigation"
+        },
+        {
+          "command": "submit-dashboard.submit-all",
+          "when": "view == submit-dashboard",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "job-dashboard.cancel",
+          "when": "view == job-dashboard",
+          "group": "inline"
+        },
+        {
+          "command": "job-dashboard.cancel-and-resubmit",
+          "when": "view == job-dashboard",
+          "group": "inline"
+        },
+        {
+          "command": "job-dashboard.show-output",
+          "when": "view == job-dashboard",
+          "group": "inline"
+        },
+        {
+          "command": "job-dashboard.show-source",
+          "when": "view == job-dashboard",
+          "group": "inline"
+        },
+        {
+          "command": "submit-dashboard.submit",
+          "when": "view == submit-dashboard",
+          "group": "inline"
+        },
+        {
+          "command": "submit-dashboard.show-source",
+          "when": "view == submit-dashboard",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "20.2.5",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.3",
+    "@vscode/test-electron": "^2.3.2"
+  }
+}
