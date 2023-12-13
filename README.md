@@ -1,7 +1,9 @@
-# Slurm Dashboard
+<p align="center"><img align="center" width="64" src="./images/icon.png"/></p>
+<h1 align="center">Slurm Dashboard</h1>
 
-A dashboard for interacting with the Slurm workload manager. It allows you to
-see running jobs, cancel jobs, submit new jobs, and more.
+
+A dashboard for interacting with the Slurm workload manager in VSCode. It allows
+you to see running jobs, cancel jobs, submit new jobs, and more.
 
 
 ## Features
@@ -40,6 +42,10 @@ The following issues are known:
 * Some Slurm configurations will silently fail when calling `sbatch` from a VSCode extension. This means the _submit job_ actions will not work, but no errors will be shown since Slurm silently fails. It is unknown what causes this.
 
 ## Release Notes
+
+### 0.0.2
+
+- update logo and readme
 
 ### 0.0.1
 
