@@ -1,7 +1,9 @@
-# Slurm Dashboard
+<p align="center"><img align="center" width="64" src="./images/icon.png"/></p>
+<h1 align="center">Slurm Dashboard</h1>
 
-A dashboard for interacting with the Slurm workload manager. It allows you to
-see running jobs, cancel jobs, submit new jobs, and more.
+
+A dashboard for interacting with the Slurm workload manager in VSCode. It allows
+you to see running jobs, cancel jobs, submit new jobs, and more.
 
 
 ## Features
