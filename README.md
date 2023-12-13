@@ -1,4 +1,4 @@
-<p align="center"><img align="center" width="64" src="./images/icon.png"/></p>
+<p align="center"><img align="center" width="128" src="./images/icon.png"/></p>
 <h1 align="center">Slurm Dashboard</h1>
 
 
