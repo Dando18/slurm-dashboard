@@ -43,6 +43,10 @@ The following issues are known:
 
 ## Release Notes
 
+### 0.0.2
+
+- update logo and readme
+
 ### 0.0.1
 
 - Slurm support
