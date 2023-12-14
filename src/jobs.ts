@@ -26,21 +26,21 @@ export class JobItem extends vscode.TreeItem {
     }
 
     getIconPath(): string | vscode.Uri | vscode.ThemeIcon | undefined {
-        const useNative = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.useNativeIcons", false);
+        const useCustom = !vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.useNativeIcons", false);
         if (this.job.status === "RUNNING") {
             if (this.job.isPercentFinished(0.9)) {
-                return (useNative) ? path.join(__filename, '..', '..', 'images', 'running-orange.svg') : new vscode.ThemeIcon("play");
+                return (useCustom) ? path.join(__filename, '..', '..', 'images', 'running-orange.svg') : new vscode.ThemeIcon("play");
             } else {
-                return (useNative) ? path.join(__filename, '..', '..', 'images', 'running.svg') : new vscode.ThemeIcon("play");
+                return (useCustom) ? path.join(__filename, '..', '..', 'images', 'running.svg') : new vscode.ThemeIcon("play");
             }
         } else if (this.job.status === "PENDING") {
-            return (useNative) ? path.join(__filename, '..', '..', 'images', 'pending.svg') : new vscode.ThemeIcon("ellipsis");
+            return (useCustom) ? path.join(__filename, '..', '..', 'images', 'pending.svg') : new vscode.ThemeIcon("ellipsis");
         } else if (this.job.status === "COMPLETED" || this.job.status === "COMPLETING") {
-            return (useNative) ? path.join(__filename, '..', '..', 'images', 'completed.svg') : new vscode.ThemeIcon("check");
+            return (useCustom) ? path.join(__filename, '..', '..', 'images', 'completed.svg') : new vscode.ThemeIcon("check");
         } else if (this.job.status === "CANCELLED" || this.job.status === "FAILED") {
-            return (useNative) ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon("error");
+            return (useCustom) ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon("error");
         } else if (this.job.status === "TIMEOUT") {
-            return (useNative) ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon("warning");
+            return (useCustom) ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon("warning");
         } else {
             return undefined;
         }
