@@ -26,20 +26,21 @@ export class JobItem extends vscode.TreeItem {
     }
 
     getIconPath(): string | vscode.Uri | vscode.ThemeIcon | undefined {
+        const useNative = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.useNativeIcons", false);
         if (this.job.status === "RUNNING") {
             if (this.job.isPercentFinished(0.9)) {
-                return path.join(__filename, '..', '..', 'images', 'running-orange.svg');
+                return (useNative) ? path.join(__filename, '..', '..', 'images', 'running-orange.svg') : new vscode.ThemeIcon("play");
             } else {
-                return path.join(__filename, '..', '..', 'images', 'running.svg'); //new vscode.ThemeIcon("play");
+                return (useNative) ? path.join(__filename, '..', '..', 'images', 'running.svg') : new vscode.ThemeIcon("play");
             }
         } else if (this.job.status === "PENDING") {
-            return path.join(__filename, '..', '..', 'images', 'pending.svg'); //new vscode.ThemeIcon("ellipsis");
+            return (useNative) ? path.join(__filename, '..', '..', 'images', 'pending.svg') : new vscode.ThemeIcon("ellipsis");
         } else if (this.job.status === "COMPLETED" || this.job.status === "COMPLETING") {
-            return path.join(__filename, '..', '..', 'images', 'completed.svg'); //new vscode.ThemeIcon("check");
+            return (useNative) ? path.join(__filename, '..', '..', 'images', 'completed.svg') : new vscode.ThemeIcon("check");
         } else if (this.job.status === "CANCELLED" || this.job.status === "FAILED") {
-            return path.join(__filename, '..', '..', 'images', 'error.svg'); //new vscode.ThemeIcon("error");
+            return (useNative) ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon("error");
         } else if (this.job.status === "TIMEOUT") {
-            return path.join(__filename, '..', '..', 'images', 'error.svg'); //new vscode.ThemeIcon("warning");
+            return (useNative) ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon("warning");
         } else {
             return undefined;
         }

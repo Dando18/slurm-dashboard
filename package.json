@@ -171,6 +171,11 @@
           "default": 300,
           "description": "How many seconds between refreshing job queue. Set to null to disable automatic refresh."
         },
+        "slurm-dashboard.job-dashboard.useNativeIcons": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use native icons for job status instead of custom extension ones."
+        },
         "slurm-dashboard.submit-dashboard.jobScriptExtensions": {
           "type": "array",
           "default": [".slurm", ".sbatch", ".job"],
