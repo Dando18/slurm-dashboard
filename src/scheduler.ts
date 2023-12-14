@@ -22,6 +22,14 @@ export class Job {
             return undefined;
         }
     }
+
+    public isPercentFinished(percent: number): boolean|undefined {
+        if (this.maxTime && this.curTime) {
+            return this.curTime.toSeconds() / this.maxTime.toSeconds() >= percent;
+        } else {
+            return undefined;
+        }
+    }
 }
 
 
@@ -163,13 +171,15 @@ export class SlurmScheduler implements Scheduler {
 }
 
 export class Debug implements Scheduler {
-    private readonly jobs: Job[] = [
+    private jobs: Job[] = [
         new Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 30, 0), new WallTime(0, 12, 43)),
-        new Job("2", "job2", "PENDING", "debug", "job2.sh", "job2.out", new WallTime(1, 20, 40), new WallTime(0, 0, 0)),
-        new Job("3", "job3", "COMPLETED", "debug", "job3.sh", "job3.out", new WallTime(7, 0, 0), new WallTime(7, 0, 0)),
-        new Job("4", "job4", "TIMEOUT", "debug", "job4.sh", "job4.out", new WallTime(1, 30, 0), new WallTime(1, 30, 0)),
-        new Job("5", "job5", "CANCELLED", "debug", "job5.sh", "job5.out", new WallTime(23, 59, 59), new WallTime(0, 0, 0)),
-        new Job("6", "job6", "FAILED", "debug", "job6.sh", "job6.out", new WallTime(0, 5, 0), new WallTime(0, 0, 0)),
+        new Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(1, 30, 0), new WallTime(1, 28, 1)),
+        new Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 30, 0), new WallTime(0, 1, 15)),
+        new Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(1, 20, 40), new WallTime(0, 0, 0)),
+        new Job("5", "job5", "COMPLETED", "debug", "job5.sh", "job5.out", new WallTime(7, 0, 0), new WallTime(7, 0, 0)),
+        new Job("6", "job6", "TIMEOUT", "debug", "job6.sh", "job6.out", new WallTime(1, 30, 0), new WallTime(1, 30, 0)),
+        new Job("7", "job7", "CANCELLED", "debug", "job7.sh", "job7.out", new WallTime(23, 59, 59), new WallTime(0, 0, 0)),
+        new Job("8", "job8", "FAILED", "debug", "job8.sh", "job8.out", new WallTime(0, 5, 0), new WallTime(0, 0, 0)),
     ];
 
     public getQueue(): Thenable<Job[]> {
@@ -177,6 +187,7 @@ export class Debug implements Scheduler {
     }
 
     public cancelJob(job: Job): void {
+        this.jobs = this.jobs.filter((j) => j.id !== job.id);
         vscode.window.showInformationMessage(`Cancel job ${job.id}`);
     }
 
