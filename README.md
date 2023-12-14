@@ -2,8 +2,10 @@
 <h1 align="center">Slurm Dashboard</h1>
 
 
-A dashboard for interacting with the Slurm workload manager in VSCode. It allows
-you to see running jobs, cancel jobs, submit new jobs, and more.
+<b>A dashboard for interacting with the Slurm workload manager in VSCode. It allows
+you to see running jobs, cancel jobs, submit new jobs, and more.</b>
+
+[![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://marketplace.visualstudio.com/items?itemName=danielnichols.slurm-dashboard)&nbsp;[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/danielnichols.slurm-dashboard)](https://marketplace.visualstudio.com/items?itemName=danielnichols.slurm-dashboard)&nbsp;[![GitHub release (with filter)](https://img.shields.io/github/v/release/Dando18/slurm-dashboard)](https://github.com/Dando18/slurm-dashboard/releases)&nbsp;[![GitHub license](https://badgen.net/github/license/Dando18/slurm-dashboard)](https://github.com/Dando18/slurm-dashboard/blob/main/LICENSE)&nbsp;[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/Dando18/slurm-dashboard/.github%2Fworkflows%2Fci.yaml?logo=github&label=ci)](https://github.com/Dando18/slurm-dashboard/actions/workflows/ci.yaml)
 
 
 ## Features
