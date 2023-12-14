@@ -63,6 +63,10 @@ The following issues are known:
 
 ## Release Notes
 
+### 0.0.3
+
+- update icons for job queue
+
 ### 0.0.2
 
 - update logo and readme
