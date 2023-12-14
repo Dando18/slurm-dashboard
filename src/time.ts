@@ -33,7 +33,7 @@ export class WallTime {
         return new WallTime(hours, minutes, seconds);
     }
 
-    pad(n: number): string {
+    private pad(n: number): string {
         return n < 10 ? "0" + n : "" + n;
     }
 
