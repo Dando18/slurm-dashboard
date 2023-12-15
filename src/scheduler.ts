@@ -32,6 +32,38 @@ export class Job {
     }
 }
 
+export function sortJobs(jobs: Job[], key: string|null|undefined) {
+    if (!key) {
+        return;
+    }
+
+    const AVAILABLE_KEYS = ["id", "name", "time left", "status"];
+    if (!AVAILABLE_KEYS.includes(key)) {
+        vscode.window.showErrorMessage(`Invalid sort key: ${key}`);
+        return;
+    }
+
+    jobs.sort((a, b) => {
+        if (key === "id") {
+            return a.id.localeCompare(b.id);
+        } else if (key === "name") {
+            return a.name.localeCompare(b.name);
+        } else if (key === "time left") {
+            let aTimeLeft = a.getTimeLeft();
+            let bTimeLeft = b.getTimeLeft();
+            if (aTimeLeft && bTimeLeft) {
+                return aTimeLeft.cmp(bTimeLeft);
+            } else {
+                return 0;
+            }
+        } else if (key === "status") {
+            return a.status.localeCompare(b.status);
+        } else {
+            return 0;
+        }
+    });
+}
+
 
 export interface Scheduler {
 

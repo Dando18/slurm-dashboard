@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Job, Scheduler } from './scheduler';
+import { Job, Scheduler, sortJobs } from './scheduler';
 import { resolvePathRelativeToWorkspace } from './fileutilities';
 
 
@@ -111,6 +111,9 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         } else {
             const showInfo = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.showJobInfo", false);
             return this.scheduler.getQueue().then((jobs) => {
+                const sortKey: string|null|undefined = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.sortBy");
+                sortJobs(jobs, sortKey);
+                
                 const items = jobs.map((job) => new JobItem(job, showInfo));
                 this.startExtrapolatingJobTimes();
                 this.jobItems = items;
