@@ -196,6 +196,11 @@
           "default": true,
           "description": "Prompt before submitting all job scripts."
         },
+        "slurm-dashboard.submit-dashboard.sortBy": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Sort the job script list by this column. Set to null to leave the order the glob pattern discovered the files. Choices: [\"filename\", \"rel path\", \"last modified\", \"newest\", \"oldest\"] Default: null"
+        },
         "slurm-dashboard.setJobWorkingDirectoryToScriptDirectory": {
           "type": "boolean",
           "default": true,

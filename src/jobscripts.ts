@@ -10,7 +10,7 @@ function getPathRelativeToWorkspaceRoot(fpath: string|vscode.Uri): string {
 }
 
 export class JobScript extends vscode.TreeItem {
-    constructor(public fpath: string | vscode.Uri) {
+    constructor(public fpath: string | vscode.Uri, public stat?: vscode.FileStat) {
         super(getBaseName(fpath), vscode.TreeItemCollapsibleState.None);
         this.iconPath = new vscode.ThemeIcon("file-code");
         this.tooltip = fpath.toString();
@@ -21,6 +21,40 @@ export class JobScript extends vscode.TreeItem {
             arguments: [this]
         };
     }
+}
+
+function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void {
+    if (!key) {
+        return;
+    }
+
+    const AVAILABLE_KEYS = ["filename", "rel path", "last modified", "newest", "oldest"];
+    if (!AVAILABLE_KEYS.includes(key)) {
+        vscode.window.showErrorMessage(`Invalid sort key: ${key}`);
+        return;
+    }
+    
+    scripts.sort((a, b) => {
+        if (key === "filename") {
+            return getBaseName(a.fpath).localeCompare(getBaseName(b.fpath));
+        } else if (key === "rel path") {
+            return getPathRelativeToWorkspaceRoot(a.fpath).localeCompare(getPathRelativeToWorkspaceRoot(b.fpath));
+        } else if (key === "last modified") {
+            if (a.stat && b.stat) {
+                return b.stat.mtime - a.stat.mtime;
+            } else {
+                return 0;
+            }
+        } else if (key === "newest" || key === "oldest") {
+            if (a.stat && b.stat) {
+                return (key === "newest") ? b.stat.ctime - a.stat.ctime : a.stat.ctime - b.stat.ctime;
+            } else {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    });
 }
 
 export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
@@ -50,11 +84,18 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         let foundFiles: PromiseLike<JobScript[]>[] = [];
         jobScriptExts.forEach((ext) => {
             let jobScripts = vscode.workspace.findFiles(`**/*${ext}`)
-                .then((uris) => uris.flatMap((uri) => new JobScript(uri)));
+                .then((uris) => {
+                    let stats = uris.map((uri) => vscode.workspace.fs.stat(uri));
+                    return Promise.all(stats).then((stats) => {
+                        return uris.map((uri, i) => new JobScript(uri, stats[i]));
+                    });
+                });
             foundFiles.push(jobScripts);
         });
         return Promise.all(foundFiles).then((jobScripts) => {
+            const sortKey: string|null|undefined = vscode.workspace.getConfiguration("slurm-dashboard").get("submit-dashboard.sortBy");
             const scripts = jobScripts.flat();
+            sortJobsScripts(scripts, sortKey);
             this.jobScripts = scripts;
             return scripts;
         });
