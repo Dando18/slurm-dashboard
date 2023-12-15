@@ -51,7 +51,19 @@ export class WallTime {
         return this.seconds + this.minutes * 60 + this.hours * 3600;
     }
 
+    public add(other: WallTime): WallTime {
+        return new WallTime(this.hours + other.hours, this.minutes + other.minutes, this.seconds + other.seconds);
+    }
+
+    public addSeconds(seconds: number): WallTime {
+        return new WallTime(this.hours, this.minutes, this.seconds + seconds);
+    }
+
     public absDiffSeconds(other: WallTime): number {
         return Math.abs(this.toSeconds() - other.toSeconds());
+    }
+
+    public cmp(other: WallTime): number {
+        return this.toSeconds() - other.toSeconds();
     }
 }

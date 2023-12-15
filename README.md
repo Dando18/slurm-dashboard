@@ -37,6 +37,13 @@ This extension contributes the following settings:
 * `slurm-dashboard.job-dashboard.refreshInterval`: How many seconds between
   refreshes of the job queue view. Set to `null` to turn off auto-refresh.
   Default: `300`
+* `slurm-dashboard.job-dashboard.extrapolationInterval`: Extrapolate the job run
+  times in the UI without querying the workload manager. Allows you to set a
+  high job-dashboard.refreshInterval, but still see more realistic job run
+  times. This has the danger of coming out of sync with the real times or not
+  portraying job completion/failure, so it is turned off by default. Provide a
+  number to specify the interval in seconds or null to disable extrapolation.
+  Default: `null`
 * `slurm-dashboard.job-dashboard.useNativeIcons`: Instead of the job status
   icons shipped with the extension, use VSCode native codicons. Default: `false`
 * `slurm-dashboard.submit-dashboard.jobScriptExtensions`: File extensions used
@@ -53,6 +60,17 @@ refreshes its data at regular intervals. To avoid overloading the login nodes or
 the workload manager the refresh interval is set to a high value. By default it
 is 300 seconds. This can be changed to the users preference or auto-refresh can
 be turned off entirely by setting it to `null`.
+
+If you still want to see live job times, you can set
+`job-dashboard.extrapolationInterval`, which will extrapolate the current job
+time based on the last available value from the workload manager. This will make
+the UI more informative, but has the danger of coming out of sync with the real
+job times and/or not capturing job completion and failure. However, these will
+be corrected the next time the jobs are refreshed from the queue. Due to these
+reasons extrapolation is turned off by default. An example of what this looks
+like when enabled is shown below.
+
+![Time Extrapolation Example Gif](images/time-extrapolate-example.gif)
 
 ## Known Issues
 
