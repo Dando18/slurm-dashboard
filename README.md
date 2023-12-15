@@ -46,10 +46,17 @@ This extension contributes the following settings:
   Default: `null`
 * `slurm-dashboard.job-dashboard.useNativeIcons`: Instead of the job status
   icons shipped with the extension, use VSCode native codicons. Default: `false`
+* `slurm-dashboard.job-dashboard.sortBy`: Sort the job list by this column. Set
+  to null to leave the order returned by the workload manager. Choices: `["id",
+  "name", "time left", "status"]` Default: `null`
 * `slurm-dashboard.submit-dashboard.jobScriptExtensions`: File extensions used
   to identify job scripts. Default: `[".sbatch", ".slurm", ".job"]`
 * `slurm-dashboard.submit-dashboard.promptBeforeSubmitAll`: Prompt user before
   submitting all job scripts. Default: `true`
+* `slurm-dashboard.submit-dashboard.sortBy`: Sort the job script list by this
+  column. Set to null to leave the order the glob pattern discovered the files.
+  Choices: `["filename", "rel path", "last modified", "newest", "oldest"]`
+  Default: `null`
 * `slurm-dashboard.setJobWorkingDirectoryToScriptDirectory`: Launch job scripts
   with the working directory as the location of the job script. Default: `true`
 * `slurm-dashboard.backend`: Scheduler backend. Choices: `slurm`, `debug`.
