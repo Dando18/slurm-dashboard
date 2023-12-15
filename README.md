@@ -83,6 +83,10 @@ The following issues are known:
 
 ## Release Notes
 
+### 0.0.4
+
+- added option to extrapolate job run times in the UI
+
 ### 0.0.3
 
 - update icons for job queue
