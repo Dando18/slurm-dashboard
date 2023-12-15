@@ -66,9 +66,9 @@ If you still want to see live job times, you can set
 time based on the last available value from the workload manager. This will make
 the UI more informative, but has the danger of coming out of sync with the real
 job times and/or not capturing job completion and failure. However, these will
-be updated the next time the jobs are refreshed from the queue. Due to these
-reasons extrapolation is turned off by default. An example of what these look
-like are shown below.
+be corrected the next time the jobs are refreshed from the queue. Due to these
+reasons extrapolation is turned off by default. An example of what this looks
+like when enabled is shown below.
 
 ![Time Extrapolation Example Gif](images/time-extrapolate-example.gif)
 
