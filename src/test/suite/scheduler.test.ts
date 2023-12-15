@@ -6,6 +6,16 @@ import * as vscode from 'vscode';
 import { WallTime } from '../../time';
 import * as scheduler from '../../scheduler';
 
+/*  Randomize array in-place using Durstenfeld shuffle algorithm 
+    https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+*/
+function shuffleArray(array: any[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 suite('scheduler.ts tests', () => {
 	
     test('Job :: constructor', () => {
@@ -63,4 +73,114 @@ suite('scheduler.ts tests', () => {
         }
     });
 
+
+    test('sortJobs', () => {
+        const jobsRef = [
+            new scheduler.Job('1', 'Test Job 1', 'RUNNING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 1800)),
+            new scheduler.Job('2', 'Test Job 2', 'COMPLETED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 30, 0), new WallTime(0, 15, 30)),
+            new scheduler.Job('3', 'Test Job 3', 'PENDING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 0)),
+            new scheduler.Job('4', 'Test Job 4', 'FAILED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 30, 0), new WallTime(0, 15, 45)),
+        ];
+
+        let jobs = jobsRef.slice();
+        shuffleArray(jobs);
+        scheduler.sortJobs(jobs, 'id');
+        assert.strictEqual(jobs[0].id, '1', "failed sort by id");
+        assert.strictEqual(jobs[1].id, '2', "failed sort by id");
+        assert.strictEqual(jobs[2].id, '3', "failed sort by id");
+        assert.strictEqual(jobs[3].id, '4', "failed sort by id");
+
+        jobs = jobsRef.slice();
+        shuffleArray(jobs);
+        scheduler.sortJobs(jobs, 'name');
+        assert.strictEqual(jobs[0].name, 'Test Job 1', "failed sort by name");
+        assert.strictEqual(jobs[1].name, 'Test Job 2', "failed sort by name");
+        assert.strictEqual(jobs[2].name, 'Test Job 3', "failed sort by name");
+        assert.strictEqual(jobs[3].name, 'Test Job 4', "failed sort by name");
+
+        jobs = jobsRef.slice();
+        shuffleArray(jobs);
+        scheduler.sortJobs(jobs, 'time left');
+        assert.strictEqual(jobs[0].id, '4', "failed sort by time left");
+        assert.strictEqual(jobs[1].id, '2', "failed sort by time left");
+        assert.strictEqual(jobs[2].id, '1', "failed sort by time left");
+        assert.strictEqual(jobs[3].id, '3', "failed sort by time left");
+
+        jobs = jobsRef.slice();
+        shuffleArray(jobs);
+        scheduler.sortJobs(jobs, 'status');
+        assert.strictEqual(jobs[0].id, '2', "failed sort by status");
+        assert.strictEqual(jobs[1].id, '4', "failed sort by status");
+        assert.strictEqual(jobs[2].id, '3', "failed sort by status");
+        assert.strictEqual(jobs[3].id, '1', "failed sort by status");
+
+        jobs = jobsRef.slice();
+        scheduler.sortJobs(jobs, null);
+        assert.strictEqual(jobs[0].id, '1');
+        assert.strictEqual(jobs[1].id, '2');
+        assert.strictEqual(jobs[2].id, '3');
+        assert.strictEqual(jobs[3].id, '4');
+    });
+
+    test('Debug :: getQueue', () => {
+        const jobs = [
+            new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 30, 0), new WallTime(0, 12, 43)),
+            new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(1, 30, 0), new WallTime(1, 28, 1)),
+            new scheduler.Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 30, 0), new WallTime(0, 1, 15)),
+            new scheduler.Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(1, 20, 40), new WallTime(0, 0, 0)),
+            new scheduler.Job("5", "job5", "COMPLETED", "debug", "job5.sh", "job5.out", new WallTime(7, 0, 0), new WallTime(7, 0, 0)),
+            new scheduler.Job("6", "job6", "TIMEOUT", "debug", "job6.sh", "job6.out", new WallTime(1, 30, 0), new WallTime(1, 30, 0)),
+            new scheduler.Job("7", "job7", "CANCELLED", "debug", "job7.sh", "job7.out", new WallTime(23, 59, 59), new WallTime(0, 0, 0)),
+            new scheduler.Job("8", "job8", "FAILED", "debug", "job8.sh", "job8.out", new WallTime(0, 5, 0), new WallTime(0, 0, 0)),
+        ];
+
+        const debug = new scheduler.Debug();
+        debug.getQueue().then((res) => {
+            assert.strictEqual(res.length, jobs.length);
+            for (let i = 0; i < res.length; i++) {
+                assert.strictEqual(res[i].id, jobs[i].id);
+                assert.strictEqual(res[i].name, jobs[i].name);
+                assert.strictEqual(res[i].status, jobs[i].status);
+                assert.strictEqual(res[i].queue, jobs[i].queue);
+                assert.strictEqual(res[i].batchFile, jobs[i].batchFile);
+                assert.strictEqual(res[i].outputFile, jobs[i].outputFile);
+                assert.strictEqual(res[i].maxTime?.toSeconds(), jobs[i].maxTime?.toSeconds());
+                assert.strictEqual(res[i].curTime?.toSeconds(), jobs[i].curTime?.toSeconds());
+            }
+        });
+    });
+
+    test('Debug :: cancelJob', () => {
+        let debug = new scheduler.Debug();
+
+        debug.cancelJob(new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 30, 0), new WallTime(0, 12, 43)));
+        debug.cancelJob(new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(1, 30, 0), new WallTime(1, 28, 1)));
+
+        debug.getQueue().then((res) => {
+            assert.strictEqual(res.length, 6);
+            assert.ok(res.every((job) => job.id !== "1" && job.id !== "2"));
+        });
+    });
+
+    test('Debug :: submitJob', () => {
+        let debug = new scheduler.Debug();
+
+        assert.doesNotThrow(() => debug.submitJob("job1.sh"));
+    }); 
+
+    test('getScheduler', async () => {
+        let config = vscode.workspace.getConfiguration("slurm-dashboard");
+        
+        await config.update("backend", "slurm");
+        let sched = scheduler.getScheduler();
+        assert.ok(sched instanceof scheduler.SlurmScheduler);
+
+        await config.update("backend", "debug");
+        sched = scheduler.getScheduler();
+        assert.ok(sched instanceof scheduler.Debug);
+
+        await config.update("backend", "invalid");
+        sched = scheduler.getScheduler();
+        assert.ok(sched instanceof scheduler.SlurmScheduler);
+    });
 });

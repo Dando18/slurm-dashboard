@@ -10,7 +10,7 @@ suite('fileutilities.ts tests', () => {
 	test('resolvePathRelativeToWorkspace', () => {
         {   // absolute path
             const filePath = 'src/fileutilities.ts';
-            const workspaceRoot = '';
+            const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? '';
             const expectedUri = vscode.Uri.joinPath(vscode.Uri.file(workspaceRoot), filePath);
             const actualUri = fu.resolvePathRelativeToWorkspace(filePath);
             assert.strictEqual(actualUri.toString(), expectedUri.toString(), "relative path");
