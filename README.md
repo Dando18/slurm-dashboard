@@ -61,13 +61,14 @@ the workload manager the refresh interval is set to a high value. By default it
 is 300 seconds. This can be changed to the users preference or auto-refresh can
 be turned off entirely by setting it to `null`.
 
-If you still want to see live job times, you can set `job-dashboard.extrapolationInterval`,
-which will extrapolate the current job time based on the last available value
-from the workload manager. This will make the UI more informative, but has 
-the danger of coming out of sync with the real job times and/or not capturing
-job completion and failure. However, these will be updated the next time the 
-jobs are refreshed from the queue. Due to these reasons extrapolation is turned
-off by default. 
+If you still want to see live job times, you can set
+`job-dashboard.extrapolationInterval`, which will extrapolate the current job
+time based on the last available value from the workload manager. This will make
+the UI more informative, but has the danger of coming out of sync with the real
+job times and/or not capturing job completion and failure. However, these will
+be updated the next time the jobs are refreshed from the queue. Due to these
+reasons extrapolation is turned off by default. An example of what these look
+like are shown below.
 
 ![Time Extrapolation Example Gif](images/time-extrapolate-example.gif)
 
