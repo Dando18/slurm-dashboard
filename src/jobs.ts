@@ -70,11 +70,27 @@ export class JobItem extends vscode.TreeItem {
         }
         return infoItems;
     }
+
+    public extrapolateTime(since: number): boolean {
+        let didUpdate = false;
+        if (this.job.status === "RUNNING" && this.job.curTime && this.job.maxTime) {
+
+            const elapsed = Math.round((performance.now() - since) / 1000);
+            const displayTime = this.job.curTime!.addSeconds(elapsed);
+
+            if (displayTime.cmp(this.job.maxTime!) <= 0) {
+                this.description = `${displayTime} / ${this.job.maxTime}`;
+                didUpdate = true;
+            }
+        }
+        return didUpdate;
+    }
 }
 
 export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoItem> {
     private jobItems: JobItem[] = [];
     private autoRefreshTimer: NodeJS.Timeout|null = null;
+    private extrapolationTimer: NodeJS.Timeout|null = null;
     
     private _onDidChangeTreeData: vscode.EventEmitter<JobItem|InfoItem|undefined|null|void> = new vscode.EventEmitter<JobItem|InfoItem|undefined|null|void>();
     readonly onDidChangeTreeData: vscode.Event<JobItem|InfoItem|undefined|null|void> = this._onDidChangeTreeData.event;
@@ -96,6 +112,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
             const showInfo = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.showJobInfo", false);
             return this.scheduler.getQueue().then((jobs) => {
                 const items = jobs.map((job) => new JobItem(job, showInfo));
+                this.startExtrapolatingJobTimes();
                 this.jobItems = items;
                 return items;
             });
@@ -133,6 +150,30 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         const refreshInterval: number|null|undefined = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.refreshInterval");
         if (refreshInterval) {
             this.autoRefreshTimer = setInterval(() => this.refresh(), refreshInterval*1000);
+        }
+    }
+
+    private startExtrapolatingJobTimes(): void {
+        this.stopExtrapolatingJobTimes();
+
+        const interval: number|null|undefined = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.extrapolationInterval");
+
+        if (interval) {
+            const since = performance.now();
+            this.extrapolationTimer = setInterval(() => {
+                this.jobItems.forEach((jobItem) => {
+                    if (jobItem.extrapolateTime(since)) {
+                        this._onDidChangeTreeData.fire(jobItem);
+                    }
+                });
+            }, interval*1000);
+        }
+    }
+
+    private stopExtrapolatingJobTimes(): void {
+        if (this.extrapolationTimer) {
+            clearInterval(this.extrapolationTimer);
+            this.extrapolationTimer = null;
         }
     }
 
