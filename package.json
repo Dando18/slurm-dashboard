@@ -181,6 +181,11 @@
           "default": null,
           "description": "Extrapolate the job run times in the UI without querying the workload manager. Allows you to set a high job-dashboard.refreshInterval, but still see more realistic job run times. This has the danger of coming out of sync with the real times or not portraying job completion/failure, so it is turned off by default. A value of null disables extrapolation."
         },
+        "slurm-dashboard.job-dashboard.sortBy": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Sort the job list by this column. Set to null to leave the order returned by the workload manager. Choices: [\"id\", \"name\", \"time left\", \"status\"] Default: null"
+        },
         "slurm-dashboard.submit-dashboard.jobScriptExtensions": {
           "type": "array",
           "default": [".slurm", ".sbatch", ".job"],
