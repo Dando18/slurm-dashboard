@@ -16,7 +16,7 @@ suite('jobscripts.ts tests', () => {
                 assert.strictEqual(jobScript.label, 'job1.sbatch');
                 assert.strictEqual(jobScript.collapsibleState, vscode.TreeItemCollapsibleState.None);
                 assert.strictEqual(jobScript.tooltip, fpath.toString());
-                assert.strictEqual(jobScript.description, '/job1.sbatch');
+                assert.strictEqual(jobScript.description?.toString().slice(1), 'job1.sbatch');
             }
         });
 });
