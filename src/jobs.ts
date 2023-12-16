@@ -20,7 +20,7 @@ export class JobItem extends vscode.TreeItem {
         public readonly contextValue: string = "jobItem"
     ) {
         super(job.name, (showInfo) ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
-        this.description = `${job.curTime} / ${job.maxTime}`;
+        this.description = (job.curTime && job.maxTime) ? `${job.curTime} / ${job.maxTime}` : "";
         this.iconPath = this.getIconPath();
         this.tooltip = `${job.id} (${job.status})`;
     }
