@@ -1,0 +1,2 @@
+778472       MyJob            PENDING         batch       regular          job1.out         job1.sbatch           01:30:00             00:00:00
+778416       PhysicsSim       RUNNING         batch       regular          job2.out         job2.slurm           05:00:00              01:32:16  

@@ -4,13 +4,13 @@
 
 export class WallTime {
     constructor(public hours: number, public minutes: number, public seconds: number) {
-        if (hours < 0 || minutes < 0 || seconds < 0) {
+        if (hours < 0 || minutes < 0 || seconds < 0 || isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
             throw new Error("Invalid time");
         }
         this.normalize();
     }
 
-    normalize() {
+    private normalize() {
         if (this.seconds >= 60) {
             this.minutes += Math.floor(this.seconds / 60);
             this.seconds = this.seconds % 60;
@@ -27,9 +27,13 @@ export class WallTime {
             throw new Error("Invalid time string " + time);
         }
 
-        let seconds: number = parseInt(split[0]);
-        let minutes: number = split.length > 1 ? parseInt(split[1]) : 0;
-        let hours: number = split.length > 2 ? parseInt(split[2]) : 0;
+        if (split.some((s) => isNaN(+s))) {
+            throw new Error("Invalid time string " + time);
+        }
+
+        let seconds: number = parseInt(split[0], 10);
+        let minutes: number = split.length > 1 ? parseInt(split[1], 10) : 0;
+        let hours: number = split.length > 2 ? parseInt(split[2], 10) : 0;
         return new WallTime(hours, minutes, seconds);
     }
 

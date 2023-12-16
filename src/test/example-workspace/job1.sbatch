@@ -1,0 +1,4 @@
+#!/bin/bash
+#SBATCH -t 01:00:00
+
+echo "hello"
