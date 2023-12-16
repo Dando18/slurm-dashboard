@@ -19,3 +19,11 @@ export function resolvePathRelativeToWorkspace(fpath: string): vscode.Uri {
 export function getParentDirectory(fpath: string): string {
     return fpath.split("/").slice(0, -1).join("/");
 }
+
+export function getBaseName(fpath: string|vscode.Uri): string {
+    return fpath.toString().split("/").pop()!;
+}
+
+export function getPathRelativeToWorkspaceRoot(fpath: string|vscode.Uri): string {
+    return vscode.workspace.asRelativePath(fpath, false);
+}

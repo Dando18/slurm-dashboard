@@ -168,4 +168,29 @@ suite('jobs.ts tests', () => {
         }
     });
 
+    test('JobQueueProvider :: constructor', () => {
+        assert.doesNotThrow(() => { new jobs.JobQueueProvider(new Debug()); });
+    });
+
+    test('JobQueueProvider :: getTreeItem', () => {
+        const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
+        const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), true);
+        assert.strictEqual(jobQueueProvider.getTreeItem(jobItem), jobItem);
+    });
+
+    test('JobQueueProvider :: getChildren', async () => {
+        const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
+        const children = await jobQueueProvider.getChildren();
+        assert.ok(children);
+        assert.strictEqual(children.length, 8);
+        assert.strictEqual(children[0].label, 'job1');
+        assert.strictEqual(children[1].label, 'job2');
+        assert.strictEqual(children[2].label, 'job3');
+        assert.strictEqual(children[3].label, 'job4');
+        assert.strictEqual(children[4].label, 'job5');
+        assert.strictEqual(children[5].label, 'job6');
+        assert.strictEqual(children[6].label, 'job7');
+        assert.strictEqual(children[7].label, 'job8');
+    });
+
 });

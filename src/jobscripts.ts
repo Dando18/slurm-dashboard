@@ -1,13 +1,6 @@
 import * as vscode from 'vscode';
 import { Scheduler } from './scheduler';
-
-function getBaseName(fpath: string|vscode.Uri): string {
-    return fpath.toString().split("/").pop()!;
-}
-
-function getPathRelativeToWorkspaceRoot(fpath: string|vscode.Uri): string {
-    return vscode.workspace.asRelativePath(fpath, false);
-}
+import { getBaseName, getPathRelativeToWorkspaceRoot } from './fileutilities';
 
 export class JobScript extends vscode.TreeItem {
     constructor(public fpath: string | vscode.Uri, public stat?: vscode.FileStat) {
