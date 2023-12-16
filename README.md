@@ -90,6 +90,11 @@ The following issues are known:
 
 ## Release Notes
 
+### 0.0.5
+
+- add sorting in UI for jobs and job scripts; several options for sorting order
+- more complete CI testing
+
 ### 0.0.4
 
 - added option to extrapolate job run times in the UI
