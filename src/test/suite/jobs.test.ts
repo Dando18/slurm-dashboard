@@ -29,7 +29,7 @@ suite('jobs.ts tests', () => {
             assert.strictEqual(jobItem.collapsibleState, vscode.TreeItemCollapsibleState.Collapsed);
         }
         {
-            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'PENDING', 'queue', 'batch', 'out', new WallTime(0,30,0), new WallTime(0,15,30)), false);
+            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'PENDING', 'queue', 'batch', 'out', new WallTime(0,0,30,0), new WallTime(0,0,15,30)), false);
             assert.strictEqual(jobItem.label, 'Test Job');
             assert.strictEqual(jobItem.description, '15:30 / 30:00');
             assert.strictEqual(jobItem.tooltip, `2 (PENDING)`);
@@ -45,7 +45,7 @@ suite('jobs.ts tests', () => {
             assert.ok(jobItem.getIconPath()?.toString().endsWith('running.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0,30,0), new WallTime(0,29,30)));
+            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0,0,30,0), new WallTime(0,0,29,30)));
             assert.ok(jobItem.getIconPath()?.toString().endsWith('running-orange.svg'));
         }
         {
@@ -75,7 +75,7 @@ suite('jobs.ts tests', () => {
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon("play"));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0,30,0), new WallTime(0,29,30)));
+            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0,0,30,0), new WallTime(0,0,29,30)));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon("play"));
         }
         {
@@ -118,7 +118,7 @@ suite('jobs.ts tests', () => {
             assert.strictEqual(infoItems.length, 0);
         }
         {
-            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'PENDING', 'queue', 'batch', 'out', new WallTime(0,30,0), new WallTime(0,15,30)), true);
+            const jobItem = new jobs.JobItem(new Job('2', 'Test Job', 'PENDING', 'queue', 'batch', 'out', new WallTime(0,0,30,0), new WallTime(0,0,15,30)), true);
             const infoItems = jobItem.getInfoItems();
             assert.strictEqual(infoItems.length, 7);
             assert.strictEqual(infoItems[0].label, 'id');
@@ -140,7 +140,7 @@ suite('jobs.ts tests', () => {
 
     test('JobItem :: extrapolateTime', () => {
         {
-            const job = new Job('1', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 30, 0), new WallTime(0, 15, 30));
+            const job = new Job('1', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30));
             const jobItem = new jobs.JobItem(job);
         
             const since = performance.now() - 10 * 1000;
@@ -149,7 +149,7 @@ suite('jobs.ts tests', () => {
             assert.strictEqual(didUpdate, true);
         }
         {
-            const job = new Job('1', 'Test Job', 'PENDING', 'queue', 'batch', 'out', new WallTime(0, 30, 0), new WallTime(0, 15, 30));
+            const job = new Job('1', 'Test Job', 'PENDING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30));
             const jobItem = new jobs.JobItem(job);
         
             const since = performance.now() - 10 * 1000;
@@ -158,7 +158,7 @@ suite('jobs.ts tests', () => {
             assert.strictEqual(didUpdate, false);
         }
         {
-            const job = new Job('1', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 30, 0), new WallTime(0, 29, 50));
+            const job = new Job('1', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 50));
             const jobItem = new jobs.JobItem(job);
         
             const since = performance.now() - 100 * 1000;
