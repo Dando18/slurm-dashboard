@@ -90,6 +90,10 @@ The following issues are known:
 
 ## Release Notes
 
+### 0.0.6
+
+- enabling time formatting for multi-day jobs
+
 ### 0.0.5
 
 - add sorting in UI for jobs and job scripts; several options for sorting order

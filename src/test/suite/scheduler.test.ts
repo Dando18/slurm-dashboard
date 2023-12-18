@@ -31,7 +31,7 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.curTime, undefined);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 1800));
+            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800));
             assert.strictEqual(job.id, '1');
             assert.strictEqual(job.name, 'Test Job');
             assert.strictEqual(job.status, 'Running');
@@ -49,11 +49,11 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.getTimeLeft(), undefined);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 1800));
+            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800));
             assert.strictEqual(job.getTimeLeft()?.toSeconds(), 1800);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 30, 0), new WallTime(0, 15, 30));
+            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30));
             assert.strictEqual(job.getTimeLeft()?.toSeconds(), 870);
         }
     });
@@ -64,11 +64,11 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.isPercentFinished(0.5), undefined);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 1800));
+            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800));
             assert.strictEqual(job.isPercentFinished(0.8), false);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 30, 0), new WallTime(0, 15, 30));
+            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30));
             assert.strictEqual(job.isPercentFinished(0.5), true);
         }
     });
@@ -76,10 +76,10 @@ suite('scheduler.ts tests', () => {
 
     test('sortJobs', () => {
         const jobsRef = [
-            new scheduler.Job('1', 'Test Job 1', 'RUNNING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 1800)),
-            new scheduler.Job('2', 'Test Job 2', 'COMPLETED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 30, 0), new WallTime(0, 15, 30)),
-            new scheduler.Job('3', 'Test Job 3', 'PENDING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 3600), new WallTime(0, 0, 0)),
-            new scheduler.Job('4', 'Test Job 4', 'FAILED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 30, 0), new WallTime(0, 15, 45)),
+            new scheduler.Job('1', 'Test Job 1', 'RUNNING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800)),
+            new scheduler.Job('2', 'Test Job 2', 'COMPLETED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30)),
+            new scheduler.Job('3', 'Test Job 3', 'PENDING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job('4', 'Test Job 4', 'FAILED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 45)),
         ];
 
         let jobs = jobsRef.slice();
@@ -124,14 +124,15 @@ suite('scheduler.ts tests', () => {
 
     test('Debug :: getQueue', () => {
         const jobs = [
-            new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 30, 0), new WallTime(0, 12, 43)),
-            new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(1, 30, 0), new WallTime(1, 28, 1)),
-            new scheduler.Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 30, 0), new WallTime(0, 1, 15)),
-            new scheduler.Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(1, 20, 40), new WallTime(0, 0, 0)),
-            new scheduler.Job("5", "job5", "COMPLETED", "debug", "job5.sh", "job5.out", new WallTime(7, 0, 0), new WallTime(7, 0, 0)),
-            new scheduler.Job("6", "job6", "TIMEOUT", "debug", "job6.sh", "job6.out", new WallTime(1, 30, 0), new WallTime(1, 30, 0)),
-            new scheduler.Job("7", "job7", "CANCELLED", "debug", "job7.sh", "job7.out", new WallTime(23, 59, 59), new WallTime(0, 0, 0)),
-            new scheduler.Job("8", "job8", "FAILED", "debug", "job8.sh", "job8.out", new WallTime(0, 5, 0), new WallTime(0, 0, 0)),
+            new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
+            new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
+            new scheduler.Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
+            new scheduler.Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job("5", "job5", "PENDING", "debug", "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job("6", "job6", "COMPLETED", "debug", "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
+            new scheduler.Job("7", "job7", "TIMEOUT", "debug", "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
+            new scheduler.Job("8", "job8", "CANCELLED", "debug", "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job("9", "job9", "FAILED", "debug", "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
         ];
 
         const debug = new scheduler.Debug();
@@ -153,8 +154,8 @@ suite('scheduler.ts tests', () => {
     test('Debug :: cancelJob', () => {
         let debug = new scheduler.Debug();
 
-        debug.cancelJob(new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 30, 0), new WallTime(0, 12, 43)));
-        debug.cancelJob(new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(1, 30, 0), new WallTime(1, 28, 1)));
+        debug.cancelJob(new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)));
+        debug.cancelJob(new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)));
 
         debug.getQueue().then((res) => {
             assert.strictEqual(res.length, 6);
