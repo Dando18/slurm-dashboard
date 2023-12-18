@@ -182,7 +182,7 @@ suite('jobs.ts tests', () => {
         const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
         const children = await jobQueueProvider.getChildren();
         assert.ok(children);
-        assert.strictEqual(children.length, 8);
+        assert.strictEqual(children.length, 9);
         assert.strictEqual(children[0].label, 'job1');
         assert.strictEqual(children[1].label, 'job2');
         assert.strictEqual(children[2].label, 'job3');
@@ -191,6 +191,7 @@ suite('jobs.ts tests', () => {
         assert.strictEqual(children[5].label, 'job6');
         assert.strictEqual(children[6].label, 'job7');
         assert.strictEqual(children[7].label, 'job8');
+        assert.strictEqual(children[8].label, 'job9');
     });
 
 });

@@ -128,10 +128,11 @@ suite('scheduler.ts tests', () => {
             new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
             new scheduler.Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
             new scheduler.Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
-            new scheduler.Job("5", "job5", "COMPLETED", "debug", "job5.sh", "job5.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
-            new scheduler.Job("6", "job6", "TIMEOUT", "debug", "job6.sh", "job6.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
-            new scheduler.Job("7", "job7", "CANCELLED", "debug", "job7.sh", "job7.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
-            new scheduler.Job("8", "job8", "FAILED", "debug", "job8.sh", "job8.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job("5", "job5", "PENDING", "debug", "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job("6", "job6", "COMPLETED", "debug", "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
+            new scheduler.Job("7", "job7", "TIMEOUT", "debug", "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
+            new scheduler.Job("8", "job8", "CANCELLED", "debug", "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job("9", "job9", "FAILED", "debug", "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
         ];
 
         const debug = new scheduler.Debug();
