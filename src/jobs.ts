@@ -4,7 +4,17 @@ import { Job, Scheduler, sortJobs } from './scheduler';
 import { resolvePathRelativeToWorkspace } from './fileutilities';
 
 
+/**
+ * Represents an information item in the tree view. These are used to display
+ * job meta-data below the actual job item.
+ */
 export class InfoItem extends vscode.TreeItem {
+
+    /**
+     * Creates a new instance of the InfoItem class.
+     * @param column The column name.
+     * @param value The value of the column.
+     */
     constructor(public column: string, public value: string) {
         super(column, vscode.TreeItemCollapsibleState.None);
         this.description = value;
@@ -12,8 +22,19 @@ export class InfoItem extends vscode.TreeItem {
     }
 }
 
+/**
+ * Represents a job item in the tree view. This is the main Job element,
+ * which has buttons for canceling, resubmitting, and inspecting jobs currently
+ * in the queue.
+ */
 export class JobItem extends vscode.TreeItem {
 
+    /**
+     * Creates a new instance of JobItem.
+     * @param job The job associated with the item.
+     * @param showInfo Whether to show job meta-data beneath the item.
+     * @param contextValue The context value of the item. Set to "jobItem" to show the buttons.
+     */
     constructor(
         public job: Job,
         private readonly showInfo: boolean = false,
@@ -25,6 +46,12 @@ export class JobItem extends vscode.TreeItem {
         this.tooltip = `${job.id} (${job.status})`;
     }
 
+    /**
+     * Gets the icon path for the job item. Icon is selected based on the job status.
+     * If slurm-dashboard.job-dashboard.useNativeIcons is true, then the native icons
+     * from VSCode are used. Otherwise, custom icons are used.
+     * @returns The icon path.
+     */
     getIconPath(): string | vscode.Uri | vscode.ThemeIcon | undefined {
         const useCustom = !vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.useNativeIcons", false);
         if (this.job.status === "RUNNING") {
@@ -46,6 +73,12 @@ export class JobItem extends vscode.TreeItem {
         }
     }
 
+    /**
+     * Gets the additional information items for the job item. 
+     * These are displayed beneath the job item in the tree view and show
+     * meta-data about the job.
+     * @returns The array of additional information items.
+     */
     public getInfoItems(): InfoItem[] {
         if (!this.showInfo) {
             return [];
@@ -71,6 +104,13 @@ export class JobItem extends vscode.TreeItem {
         return infoItems;
     }
 
+    /**
+     * Extrapolates the time for the job item based on the elapsed time since a given timestamp.
+     * Does not actually refresh the UI, just the underlying data of the JobItem. An event
+     * should be fired if this function returns true.
+     * @param since The timestamp to calculate the elapsed time from.
+     * @returns True if the time was extrapolated, false otherwise.
+     */
     public extrapolateTime(since: number): boolean {
         let didUpdate = false;
         if (this.job.status === "RUNNING" && this.job.curTime && this.job.maxTime) {
@@ -87,6 +127,11 @@ export class JobItem extends vscode.TreeItem {
     }
 }
 
+/**
+ * Provides a tree data provider for displaying job items in the job dashboard.
+ * This class uses a Scheduler implementation to retrieve queue data and 
+ * interact with the system.
+ */
 export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoItem> {
     private jobItems: JobItem[] = [];
     private autoRefreshTimer: NodeJS.Timeout|null = null;
@@ -95,12 +140,32 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
     private _onDidChangeTreeData: vscode.EventEmitter<JobItem|InfoItem|undefined|null|void> = new vscode.EventEmitter<JobItem|InfoItem|undefined|null|void>();
     readonly onDidChangeTreeData: vscode.Event<JobItem|InfoItem|undefined|null|void> = this._onDidChangeTreeData.event;
   
+    /**
+     * Creates a new instance of JobQueueProvider.
+     * @param scheduler The scheduler implementation to use for retrieving queue data.
+     */
     constructor(private scheduler: Scheduler) { }
 
+    /**
+     * Returns the tree item representation of the given element.
+     * @param element The job item or info item.
+     * @returns The tree item or a promise that resolves to a tree item.
+     */
     getTreeItem(element: JobItem|InfoItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
 
+    /**
+     * Returns the child elements of the given element.
+     * If slurm-dashboard.job-dashboard.showJobInfo is true, then the child elements
+     * of a job item are the job info items. Otherwise, no child elements are ever
+     * returned.
+     * If slurm-dashboard.job-dashboard.sortBy is set, then the jobs are sorted
+     * according to its value.
+     * This routine also starts the timer for extrapolating job times.
+     * @param element The job item or info item.
+     * @returns The child job items or info items, or a promise that resolves to them.
+     */
     getChildren(element?: JobItem|InfoItem): vscode.ProviderResult<JobItem[]|InfoItem[]> {
         if (element) {
             if (element instanceof JobItem) {
@@ -122,6 +187,11 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Registers the job dashboard tree view and commands with the extension context.
+     * Begins auto-refreshing the job queue if enabled.
+     * @param context The extension context.
+     */
     public register(context: vscode.ExtensionContext): void {
         let jobView = vscode.window.registerTreeDataProvider('job-dashboard', this);
         context.subscriptions.push(jobView);
@@ -140,11 +210,19 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         });
     }
 
+    /**
+     * Refreshes the job dashboard. Updates all tree elements.
+     */
     public refresh(): void {
         this.jobItems = [];
         this._onDidChangeTreeData.fire();
     }
 
+    /**
+     * Initializes the auto refresh timer based on the configured refresh interval.
+     * Clears any existing timer and restarts a new one if
+     * slurm-dashboard.job-dashboard.refreshInterval is set.
+     */
     private initAutoRefresh(): void {
         if (this.autoRefreshTimer) {
             clearInterval(this.autoRefreshTimer);
@@ -156,6 +234,10 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Starts the timer for extrapolating job times. Stops any existing timer.
+     * The timer is started if slurm-dashboard.job-dashboard.extrapolationInterval is set.
+     */
     private startExtrapolatingJobTimes(): void {
         this.stopExtrapolatingJobTimes();
 
@@ -173,6 +255,10 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Stops the timer for extrapolating job times if it is running.
+     * Sets it to null.
+     */
     private stopExtrapolatingJobTimes(): void {
         if (this.extrapolationTimer) {
             clearInterval(this.extrapolationTimer);
@@ -180,6 +266,10 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Open the JobItem's output file in a VSCode text window.
+     * @param jobItem The job item.
+     */
     private showOutput(jobItem: JobItem): void {
         if (jobItem.job.outputFile) {
             const fpath = resolvePathRelativeToWorkspace(jobItem.job.outputFile);
@@ -193,6 +283,10 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Open the JobItem's source batch file in a VSCode text window.
+     * @param jobItem The job item.
+     */
     private showSource(jobItem: JobItem): void {
         if (jobItem.job.batchFile) {
             const fpath = resolvePathRelativeToWorkspace(jobItem.job.batchFile);
@@ -206,6 +300,12 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Cancels a job using the scheduler object. If slurm-dashboard.job-dashboard.promptBeforeCancel
+     * is true, then a confirmation dialog is shown before canceling the job.
+     * @param jobItem The job item.
+     * @returns A promise that resolves to `true` if the job was canceled, or `false` otherwise.
+     */
     private cancel(jobItem: JobItem): Thenable<boolean> {
         const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.promptBeforeCancel", true);
         let cancelFunc = () => {
@@ -226,6 +326,14 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Cancels a job and resubmits it using the scheduler.
+     * If batchfile is not set, then an error message is shown.
+     * If slurm-dashboard.job-dashboard.promptBeforeCancel is true, then a confirmation
+     * dialog is shown before canceling the job.
+     * @param jobItem The job item.
+     * @returns A promise that resolves to `true` if the job was canceled and resubmitted, or `false` otherwise.
+     */
     private cancelAndResubmit(jobItem: JobItem): Thenable<boolean> {
         if (!jobItem.job.batchFile) {
             vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
@@ -252,6 +360,11 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
         }
     }
 
+    /**
+     * Cancels all jobs using the scheduler. If slurm-dashboard.job-dashboard.promptBeforeCancelAll
+     * is true, then a confirmation dialog is shown before canceling the jobs.
+     * @returns A promise that resolves to `true` if all jobs were canceled, or `false` otherwise.
+     */
     private cancelAll(): Thenable<boolean> {
         const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("job-dashboard.promptBeforeCancelAll", true);
         let cancelAllFunc = () => {
