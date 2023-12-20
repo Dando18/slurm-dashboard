@@ -2,7 +2,17 @@ import * as vscode from 'vscode';
 import { Scheduler } from './scheduler';
 import { getBaseName, getPathRelativeToWorkspaceRoot } from './fileutilities';
 
+/**
+ * Represents a job script item in the tree view. Each item corresponds
+ * to a job script file in the workspace.
+ */
 export class JobScript extends vscode.TreeItem {
+
+    /**
+     * Creates a new instance of the JobScript class.
+     * @param fpath The file path or URI of the job script.
+     * @param stat The file stat of the job script.
+     */
     constructor(public fpath: string | vscode.Uri, public stat?: vscode.FileStat) {
         super(getBaseName(fpath), vscode.TreeItemCollapsibleState.None);
         this.iconPath = new vscode.ThemeIcon("file-code");
@@ -16,6 +26,13 @@ export class JobScript extends vscode.TreeItem {
     }
 }
 
+/**
+ * Sorts an array of JobScript objects based on the specified key.
+ * 
+ * @param scripts - The array of JobScript objects to be sorted.
+ * @param key - The key to determine the sorting order. Valid keys are "filename", "rel path", "last modified", "newest", and "oldest".
+ * @returns void
+ */
 function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void {
     if (!key) {
         return;
@@ -50,18 +67,36 @@ function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void
     });
 }
 
+/**
+ * Represents a provider for job scripts in the tree view.
+ */
 export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
     private jobScripts: JobScript[] = [];
 
     private _onDidChangeTreeData: vscode.EventEmitter<JobScript|undefined|null|void> = new vscode.EventEmitter<JobScript|undefined|null|void>();
     readonly onDidChangeTreeData: vscode.Event<JobScript|undefined|null|void> = this._onDidChangeTreeData.event;
 
+    /**
+     * Creates a new instance of JobScriptProvider. Scheduler object is used
+     * for submitting jobs.
+     * @param scheduler The scheduler used for submitting jobs.
+     */
     constructor(private scheduler: Scheduler) { }
 
+    /**
+     * Gets the tree item for the specified element.
+     * @param element The job script element.
+     * @returns The tree item representing the job script.
+     */
     getTreeItem(element: JobScript): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
 
+    /**
+     * Gets the children of the specified element. Yields all job scripts in the workspace.
+     * @param element The job script element.
+     * @returns The children of the job script element.
+     */
     getChildren(element?: JobScript): vscode.ProviderResult<JobScript[]> {
         if (element) {
             return Promise.resolve([]);
@@ -70,6 +105,13 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         }
     }
 
+    /**
+     * Retrieves all job scripts in the workspace.
+     * Searches for job scripts based on the extensions specified by
+     * the slurm-dashboard.submit-dashboard.jobScriptExtensions setting.
+     * Sorts the job scripts based on the slurm-dashboard.submit-dashboard.sortBy setting.
+     * @returns A promise that resolves to an array of job scripts.
+     */
     private getAllJobScripts(): Promise<JobScript[]> {
         const jobScriptExts = vscode.workspace.getConfiguration("slurm-dashboard").get("submit-dashboard.jobScriptExtensions", [".slurm", ".sbatch", ".job"]);
 
@@ -94,6 +136,10 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         });
     }
 
+    /**
+     * Registers the JobScriptProvider with the extension context.
+     * @param context The extension context.
+     */
     public register(context: vscode.ExtensionContext): void {
         let submitView = vscode.window.registerTreeDataProvider('submit-dashboard', this);
         context.subscriptions.push(submitView);
@@ -104,11 +150,21 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         vscode.commands.registerCommand('submit-dashboard.show-source', (jobScript: JobScript) => this.showSource(jobScript));
     }
 
+    /**
+     * Refreshes the tree view by clearing the job scripts. Refreshes
+     * the entire tree view.
+     */
     public refresh(): void {
         this.jobScripts = [];
         this._onDidChangeTreeData.fire();
     }
 
+    /**
+     * Submits all job scripts.
+     * if slurm-dashboard.submit-dashboard.promptBeforeSubmitAll is true, then
+     * prompts the user before submitting all job scripts.
+     * @returns A promise that resolves to true if all job scripts were submitted, false otherwise.
+     */
     private submitAll(): Thenable<boolean> {
         const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("submit-dashboard.promptBeforeSubmitAll", true);
 
@@ -126,10 +182,18 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         }
     }
 
+    /**
+     * Submits a job script. Uses the scheduler object to submit the job.
+     * @param jobScript The job script to submit.
+     */
     private submit(jobScript: JobScript): void {
         this.scheduler.submitJob(jobScript.fpath);
     }
 
+    /**
+     * Shows the source code of a job script in a new editor tab.
+     * @param jobScript The job script to show the source code for.
+     */
     private showSource(jobScript: JobScript): void {
         const fpath = jobScript.fpath as vscode.Uri;
         vscode.workspace.openTextDocument(fpath).then((doc) => {
