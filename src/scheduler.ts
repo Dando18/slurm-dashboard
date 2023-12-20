@@ -133,13 +133,13 @@ export class SlurmScheduler implements Scheduler {
                 jobScriptPath = jobScript.fsPath;
             }
 
-            let cwdArg = "";
+            let execOptions: any = {};
             if (setCWD) {
                 const cwd = getParentDirectory(jobScriptPath);
-                cwdArg = `--chdir=${cwd}`;
+                execOptions["cwd"] = cwd;
             }
 
-            execSync(`sbatch ${jobScriptPath} ${cwdArg}`);
+            execSync(`sbatch ${jobScriptPath}`, execOptions);
             
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to submit job ${jobScript}.\nError: ${error}`);
