@@ -95,9 +95,9 @@ export class SlurmScheduler implements Scheduler {
         new SchedulerDataColumn("Partition", 25),
         new SchedulerDataColumn("QOS", 25),
         new SchedulerDataColumn("STDOUT", 255),
-        new SchedulerDataColumn("Command", 255),
         new SchedulerDataColumn("TimeLimit", 15),
         new SchedulerDataColumn("TimeUsed", 15),
+        new SchedulerDataColumn("Command", 255),    // command last since it can sometimes have spaces in it
     ];
 
     public getQueue(): Thenable<Job[]> {
@@ -194,7 +194,6 @@ export class SlurmScheduler implements Scheduler {
                 WallTime.fromString(results["TimeUsed"])
             );
             jobs.push(job);
-
         });
 
         return jobs;
