@@ -56,7 +56,7 @@ This extension contributes the following settings:
 * `slurm-dashboard.submit-dashboard.sortBy`: Sort the job script list by this
   column. Set to `null` to leave the order the glob pattern discovered the files.
   Choices: `filename`, `rel path`, `last modified`, `newest`, `oldest`. Default:
-  `null`
+  `last modified`
 * `slurm-dashboard.setJobWorkingDirectoryToScriptDirectory`: Launch job scripts
   with the working directory as the location of the job script. Default: `true`
 * `slurm-dashboard.backend`: Scheduler backend. Choices: `slurm`, `debug`.
@@ -83,12 +83,16 @@ like when enabled is shown below.
 
 The following issues are known:
 
-* Some Slurm configurations will silently fail when calling `sbatch` from a
-  VSCode extension. This means the _submit job_ actions will not work, but no
-  errors will be shown since Slurm silently fails. It is unknown what causes
-  this.
 
 ## Release Notes
+
+### 0.0.7
+
+- fix submit issue, so now submitting jobs should work on all systems
+- fix bug with parsing _Command_ column of squeue
+- support for finding job output files when they contains special substitutions
+  (i.e. `output-%A.txt`)
+- increased documentation
 
 ### 0.0.6
 
