@@ -193,10 +193,24 @@ export class SlurmScheduler implements Scheduler {
                 WallTime.fromString(results["TimeLimit"]),
                 WallTime.fromString(results["TimeUsed"])
             );
+            job.outputFile = this.resolveStdoutPath(job);
             jobs.push(job);
         });
 
         return jobs;
+    }
+
+    private resolveStdoutPath(job: Job): string|undefined {
+        if (!job.outputFile) {
+            return undefined;
+        }
+
+        let stdoutPath = job.outputFile;
+
+        /* replace %A in the job path with the job id */
+        stdoutPath = stdoutPath.replace("%A", job.id);
+
+        return stdoutPath;
     }
 
 }
