@@ -46,7 +46,7 @@ jobs:
       - name: Upload Release Artifact
         uses: softprops/action-gh-release@v1
         with:
-          files: *.vsix
+          files: "*.vsix"
           fail_on_unmatched_files: true
       - name: Deploy
         run: npm run deploy
