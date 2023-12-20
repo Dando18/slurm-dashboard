@@ -2,7 +2,20 @@
    Time utilities
 */
 
+
+/**
+ * Represents a wall time duration in days, hours, minutes, and seconds.
+ */
 export class WallTime {
+
+    /**
+     * Creates a new instance of WallTime.
+     * @param days The number of days.
+     * @param hours The number of hours.
+     * @param minutes The number of minutes.
+     * @param seconds The number of seconds.
+     * @throws Error if any of the parameters are negative or not a number.
+     */
     constructor(public days: number, public hours: number, public minutes: number, public seconds: number) {
         if (days < 0 || hours < 0 || minutes < 0 || seconds < 0 || isNaN(days) || isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
             throw new Error("Invalid time");
@@ -10,6 +23,12 @@ export class WallTime {
         this.normalize();
     }
 
+    /**
+     * Normalizes the wall time by adjusting the values of hours, minutes, and seconds.
+     * For example, if seconds is greater than or equal to 60, it adjusts minutes and seconds accordingly.
+     * If minutes is greater than or equal to 60, it adjusts hours and minutes accordingly.
+     * If hours is greater than or equal to 24, it adjusts days and hours accordingly.
+     */
     private normalize() {
         if (this.seconds >= 60) {
             this.minutes += Math.floor(this.seconds / 60);
@@ -26,7 +45,10 @@ export class WallTime {
     }
 
     /**
-     * Parse a time string in the format D-HH:MM:SS, HH:MM:SS, MM:SS, or SS
+     * Parses a time string in the format D-HH:MM:SS, HH:MM:SS, MM:SS, or SS and returns a WallTime object.
+     * @param time The time string to parse.
+     * @returns A WallTime object representing the parsed time.
+     * @throws Error if the time string is invalid.
      */
     public static fromString(time: string): WallTime {
         let split = time.split(":");
@@ -57,10 +79,19 @@ export class WallTime {
         return new WallTime(days, hours, minutes, seconds);
     }
 
+    /**
+     * Pads a number with a leading zero if it is less than 10.
+     * @param n The number to pad.
+     * @returns The padded number as a string.
+     */
     private pad(n: number): string {
         return n < 10 ? "0" + n : "" + n;
     }
 
+    /**
+     * Returns a string representation of the wall time.
+     * @returns The wall time as a string in the format D-HH:MM:SS, HH:MM:SS, MM:SS, or SS.
+     */
     public toString(): string {
         if (this.days > 0) {
             return `${this.days}-${this.pad(this.hours)}:${this.pad(this.minutes)}:${this.pad(this.seconds)}`;
@@ -73,22 +104,48 @@ export class WallTime {
         }
     }
 
+    /**
+     * Returns the total number of seconds in the wall time.
+     * @returns The total number of seconds.
+     */
     public toSeconds(): number {
         return this.seconds + this.minutes * 60 + this.hours * 3600 + this.days * 86400;
     }
 
+    /**
+     * Adds another WallTime object to the current wall time and returns a new WallTime object.
+     * @param other The WallTime object to add.
+     * @returns A new WallTime object representing the sum of the two wall times.
+     */
     public add(other: WallTime): WallTime {
         return new WallTime(this.days + other.days, this.hours + other.hours, this.minutes + other.minutes, this.seconds + other.seconds);
     }
 
+    /**
+     * Adds the specified number of seconds to the current wall time and returns a new WallTime object.
+     * @param seconds The number of seconds to add.
+     * @returns A new WallTime object representing the updated wall time.
+     */
     public addSeconds(seconds: number): WallTime {
         return new WallTime(this.days, this.hours, this.minutes, this.seconds + seconds);
     }
 
+    /**
+     * Calculates the absolute difference in seconds between the current wall time and another WallTime object.
+     * @param other The WallTime object to compare.
+     * @returns The absolute difference in seconds.
+     */
     public absDiffSeconds(other: WallTime): number {
         return Math.abs(this.toSeconds() - other.toSeconds());
     }
 
+    /**
+     * Compares the current wall time with another WallTime object.
+     * @param other The WallTime object to compare.
+     * @returns A negative number if the current wall time is less than the other wall time,
+     *          a positive number if the current wall time is greater than the other wall time,
+     *          or zero if the wall times are equal.
+     */
     public cmp(other: WallTime): number {
         return this.toSeconds() - other.toSeconds();
     }
