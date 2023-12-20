@@ -3,7 +3,7 @@
   "displayName": "Slurm Dashboard",
   "publisher": "danielnichols",
   "description": "A dashboard for the Slurm workload manager.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": {
     "name": "Daniel Nichols",
     "url": "https://cs.umd.edu/~dnicho"
@@ -198,8 +198,8 @@
         },
         "slurm-dashboard.submit-dashboard.sortBy": {
           "type": ["string", "null"],
-          "default": null,
-          "description": "Sort the job script list by this column. Set to null to leave the order the glob pattern discovered the files. Choices: [\"filename\", \"rel path\", \"last modified\", \"newest\", \"oldest\"] Default: null"
+          "default": "last modified",
+          "description": "Sort the job script list by this column. Set to null to leave the order the glob pattern discovered the files. Choices: [\"filename\", \"rel path\", \"last modified\", \"newest\", \"oldest\"] Default: last modified"
         },
         "slurm-dashboard.setJobWorkingDirectoryToScriptDirectory": {
           "type": "boolean",
