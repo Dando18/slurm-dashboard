@@ -285,7 +285,7 @@ export class SlurmScheduler implements Scheduler {
                 WallTime.fromString(results["TimeLimit"]),
                 WallTime.fromString(results["TimeUsed"])
             );
-            job.outputFile = this.resolveStdoutPath(job);
+            job.outputFile = this.getJobOutputPath(job);
             jobs.push(job);
         });
 
@@ -293,25 +293,26 @@ export class SlurmScheduler implements Scheduler {
     }
 
     /**
-     * Resolves the path for the standard output file of a job.
+     * Finds the path for the standard output file of a job.
      * If the job does not have an output file, returns undefined.
-     * Replaces "%A" in the output file path with the job id.
+     * Uses scontrol to find the output file.
      * 
      * @param job The job for which to resolve the stdout path.
      * @returns The resolved stdout path or undefined if the job does not have an output file.
      */
-    private resolveStdoutPath(job: Job): string|undefined {
-        if (!job.outputFile) {
+    private getJobOutputPath(job: Job): string|undefined {
+        const command = `scontrol show job ${job.id} | grep StdOut | cut -d= -f2`;
+
+        try {
+            const output = execSync(command).toString().trim();
+            return output;
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Failed to get job output path for job ${job.id}.\nError: ${error}`);
             return undefined;
         }
-
-        let stdoutPath = job.outputFile;
-
-        /* replace %A in the job path with the job id */
-        stdoutPath = stdoutPath.replace("%A", job.id);
-
-        return stdoutPath;
     }
+
 
 }
 
