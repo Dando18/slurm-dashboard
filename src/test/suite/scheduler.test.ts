@@ -252,7 +252,12 @@ suite('scheduler.ts tests', () => {
         }
     });
 
-    test('Slurm :: getQueue', async () => {
+    test('Slurm :: getQueue', async function () {
+        /* skip if windows */
+        if (process.platform === 'win32') {
+            this.skip();
+        }
+
         assert.doesNotThrow(async () => {
             execSync('sreset');
         });
@@ -269,7 +274,12 @@ suite('scheduler.ts tests', () => {
         }
     });
 
-    test('Slurm :: cancelJob', async () => {
+    test('Slurm :: cancelJob', async function () {
+        /* skip if windows */
+        if (process.platform === 'win32') {
+            this.skip();
+        }
+
         assert.doesNotThrow(async () => {
             execSync('sreset');
         });
@@ -292,7 +302,12 @@ suite('scheduler.ts tests', () => {
         });
     });
 
-    test('Slurm :: submitJob', async () => {
+    test('Slurm :: submitJob', async function () {
+        /* skip if windows */
+        if (process.platform === 'win32') {
+            this.skip();
+        }
+
         assert.doesNotThrow(async () => {
             execSync('sreset');
 
@@ -316,7 +331,12 @@ suite('scheduler.ts tests', () => {
         });
     });
 
-    test('Slurm :: getJobOutputPath', async () => {
+    test('Slurm :: getJobOutputPath', async function () {
+        /* skip if windows */
+        if (process.platform === 'win32') {
+            this.skip();
+        }
+
         assert.doesNotThrow(async () => {
             execSync('sreset');
         });

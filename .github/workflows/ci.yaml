@@ -32,8 +32,8 @@ jobs:
         run: |
           sh src/test/setup-slurm-wrapper.sh
           npm test
-      - name: Run Tests
-        if: runner.os != 'Linux'
+      - name: Run Windows Tests
+        if: runner.os == 'Windows'
         run: npm test
 
   coverage:
