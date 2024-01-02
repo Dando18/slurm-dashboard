@@ -167,7 +167,17 @@ suite('scheduler.ts tests', () => {
         let debug = new scheduler.Debug();
 
         assert.doesNotThrow(() => debug.submitJob("job1.sh"));
-    }); 
+    });
+
+    test('Debug :: getJobOutput', () => {
+        let debug = new scheduler.Debug();
+
+        debug.getQueue().then((jobs: scheduler.Job[]) => {
+            jobs.forEach((job: scheduler.Job) => {
+                assert.strictEqual(job.outputFile, debug.getJobOutputPath(job));
+            });
+        });
+    });
 
     test('getScheduler', async () => {
         let config = vscode.workspace.getConfiguration("slurm-dashboard");
