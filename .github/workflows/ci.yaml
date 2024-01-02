@@ -29,7 +29,7 @@ jobs:
         run: npm test
       - name: Coverage
         uses: codecov/codecov-action@v3
-        if: runner.os = 'Linux'
+        if: runner.os == 'Linux'
         with:
           fail_ci_if_error: true
         env:
