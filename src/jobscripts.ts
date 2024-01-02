@@ -7,59 +7,61 @@ import { getBaseName, getPathRelativeToWorkspaceRoot } from './fileutilities';
  * to a job script file in the workspace.
  */
 export class JobScript extends vscode.TreeItem {
-
     /**
      * Creates a new instance of the JobScript class.
      * @param fpath The file path or URI of the job script.
      * @param stat The file stat of the job script.
      */
-    constructor(public fpath: string | vscode.Uri, public stat?: vscode.FileStat) {
+    constructor(
+        public fpath: string | vscode.Uri,
+        public stat?: vscode.FileStat
+    ) {
         super(getBaseName(fpath), vscode.TreeItemCollapsibleState.None);
-        this.iconPath = new vscode.ThemeIcon("file-code");
+        this.iconPath = new vscode.ThemeIcon('file-code');
         this.tooltip = fpath.toString();
         this.description = getPathRelativeToWorkspaceRoot(fpath);
         this.command = {
-            "title": "Show Source",
-            "command": "submit-dashboard.show-source",
-            arguments: [this]
+            title: 'Show Source',
+            command: 'submit-dashboard.show-source',
+            arguments: [this],
         };
     }
 }
 
 /**
  * Sorts an array of JobScript objects based on the specified key.
- * 
+ *
  * @param scripts - The array of JobScript objects to be sorted.
  * @param key - The key to determine the sorting order. Valid keys are "filename", "rel path", "last modified", "newest", and "oldest".
  * @returns void
  */
-export function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void {
+export function sortJobsScripts(scripts: JobScript[], key: string | null | undefined): void {
     if (!key) {
         return;
     }
 
-    const AVAILABLE_KEYS = ["filename", "rel path", "last modified", "newest", "oldest"];
+    const AVAILABLE_KEYS = ['filename', 'rel path', 'last modified', 'newest', 'oldest'];
     if (!AVAILABLE_KEYS.includes(key)) {
         vscode.window.showErrorMessage(`Invalid sort key: ${key}`);
         return;
     }
-    
+
     scripts.sort((a, b) => {
-        if (key === "filename") {
+        if (key === 'filename') {
             return getBaseName(a.fpath).localeCompare(getBaseName(b.fpath));
-        } else if (key === "rel path") {
+        } else if (key === 'rel path') {
             return getPathRelativeToWorkspaceRoot(a.fpath).localeCompare(getPathRelativeToWorkspaceRoot(b.fpath));
-        } else if (key === "last modified") {
+        } else if (key === 'last modified') {
             if (a.stat && b.stat) {
                 return b.stat.mtime - a.stat.mtime;
-            } else { 
+            } else {
                 /* c8 ignore next 2 */
                 return 0;
             }
-        } else if (key === "newest" || key === "oldest") {
+        } else if (key === 'newest' || key === 'oldest') {
             if (a.stat && b.stat) {
-                return (key === "newest") ? b.stat.ctime - a.stat.ctime : a.stat.ctime - b.stat.ctime;
-            } else { 
+                return key === 'newest' ? b.stat.ctime - a.stat.ctime : a.stat.ctime - b.stat.ctime;
+            } else {
                 /* c8 ignore next 2 */
                 return 0;
             }
@@ -76,15 +78,17 @@ export function sortJobsScripts(scripts: JobScript[], key: string|null|undefined
 export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
     private jobScripts: JobScript[] = [];
 
-    private _onDidChangeTreeData: vscode.EventEmitter<JobScript|undefined|null|void> = new vscode.EventEmitter<JobScript|undefined|null|void>();
-    readonly onDidChangeTreeData: vscode.Event<JobScript|undefined|null|void> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<JobScript | undefined | null | void> = new vscode.EventEmitter<
+        JobScript | undefined | null | void
+    >();
+    readonly onDidChangeTreeData: vscode.Event<JobScript | undefined | null | void> = this._onDidChangeTreeData.event;
 
     /**
      * Creates a new instance of JobScriptProvider. Scheduler object is used
      * for submitting jobs.
      * @param scheduler The scheduler used for submitting jobs.
      */
-    constructor(private scheduler: Scheduler) { }
+    constructor(private scheduler: Scheduler) {}
 
     /**
      * Gets the tree item for the specified element.
@@ -116,22 +120,25 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
      * @returns A promise that resolves to an array of job scripts.
      */
     private getAllJobScripts(): Promise<JobScript[]> {
-        const jobScriptExts = vscode.workspace.getConfiguration("slurm-dashboard").get("submit-dashboard.jobScriptExtensions", [".slurm", ".sbatch", ".job"]);
+        const jobScriptExts = vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('submit-dashboard.jobScriptExtensions', ['.slurm', '.sbatch', '.job']);
 
         /* find all files in workspace with job script extensions */
         let foundFiles: PromiseLike<JobScript[]>[] = [];
-        jobScriptExts.forEach((ext) => {
-            let jobScripts = vscode.workspace.findFiles(`**/*${ext}`)
-                .then((uris) => {
-                    let stats = uris.map((uri) => vscode.workspace.fs.stat(uri));
-                    return Promise.all(stats).then((stats) => {
-                        return uris.map((uri, i) => new JobScript(uri, stats[i]));
-                    });
+        jobScriptExts.forEach(ext => {
+            let jobScripts = vscode.workspace.findFiles(`**/*${ext}`).then(uris => {
+                let stats = uris.map(uri => vscode.workspace.fs.stat(uri));
+                return Promise.all(stats).then(stats => {
+                    return uris.map((uri, i) => new JobScript(uri, stats[i]));
                 });
+            });
             foundFiles.push(jobScripts);
         });
-        return Promise.all(foundFiles).then((jobScripts) => {
-            const sortKey: string|null|undefined = vscode.workspace.getConfiguration("slurm-dashboard").get("submit-dashboard.sortBy");
+        return Promise.all(foundFiles).then(jobScripts => {
+            const sortKey: string | null | undefined = vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .get('submit-dashboard.sortBy');
             const scripts = jobScripts.flat();
             sortJobsScripts(scripts, sortKey);
             this.jobScripts = scripts;
@@ -150,7 +157,9 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         vscode.commands.registerCommand('submit-dashboard.refresh', () => this.refresh());
         vscode.commands.registerCommand('submit-dashboard.submit-all', () => this.submitAll());
         vscode.commands.registerCommand('submit-dashboard.submit', (jobScript: JobScript) => this.submit(jobScript));
-        vscode.commands.registerCommand('submit-dashboard.show-source', (jobScript: JobScript) => this.showSource(jobScript));
+        vscode.commands.registerCommand('submit-dashboard.show-source', (jobScript: JobScript) =>
+            this.showSource(jobScript)
+        );
     }
 
     /**
@@ -169,18 +178,22 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
      * @returns A promise that resolves to true if all job scripts were submitted, false otherwise.
      */
     private submitAll(): Thenable<boolean> {
-        const shouldPrompt = vscode.workspace.getConfiguration("slurm-dashboard").get("submit-dashboard.promptBeforeSubmitAll", true);
+        const shouldPrompt = vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('submit-dashboard.promptBeforeSubmitAll', true);
 
         if (shouldPrompt) {
             const numJobs = this.jobScripts.length;
-            return vscode.window.showInformationMessage(`Are you sure you want to submit all ${numJobs} jobs?`, "Yes", "No").then((value) => {
-                if (value === "Yes") {
-                    this.jobScripts.forEach((jobScript) => this.submit(jobScript));
-                }
-                return value === "Yes";
-            });
+            return vscode.window
+                .showInformationMessage(`Are you sure you want to submit all ${numJobs} jobs?`, 'Yes', 'No')
+                .then(value => {
+                    if (value === 'Yes') {
+                        this.jobScripts.forEach(jobScript => this.submit(jobScript));
+                    }
+                    return value === 'Yes';
+                });
         } else {
-            this.jobScripts.forEach((jobScript) => this.submit(jobScript));
+            this.jobScripts.forEach(jobScript => this.submit(jobScript));
             return Promise.resolve(true);
         }
     }
@@ -199,7 +212,7 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
      */
     private showSource(jobScript: JobScript): void {
         const fpath = jobScript.fpath as vscode.Uri;
-        vscode.workspace.openTextDocument(fpath).then((doc) => {
+        vscode.workspace.openTextDocument(fpath).then(doc => {
             vscode.window.showTextDocument(doc);
         });
     }

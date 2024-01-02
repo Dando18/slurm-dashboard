@@ -17,7 +17,6 @@ function shuffleArray(array: any[]) {
 }
 
 suite('scheduler.ts tests', () => {
-	
     test('Job :: constructor', () => {
         {
             const job = new scheduler.Job('1', 'Test Job', 'Running');
@@ -31,7 +30,16 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.curTime, undefined);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800));
+            const job = new scheduler.Job(
+                '1',
+                'Test Job',
+                'Running',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 0, 3600),
+                new WallTime(0, 0, 0, 1800)
+            );
             assert.strictEqual(job.id, '1');
             assert.strictEqual(job.name, 'Test Job');
             assert.strictEqual(job.status, 'Running');
@@ -49,11 +57,29 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.getTimeLeft(), undefined);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800));
+            const job = new scheduler.Job(
+                '1',
+                'Test Job',
+                'Running',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 0, 3600),
+                new WallTime(0, 0, 0, 1800)
+            );
             assert.strictEqual(job.getTimeLeft()?.toSeconds(), 1800);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30));
+            const job = new scheduler.Job(
+                '1',
+                'Test Job',
+                'Running',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 15, 30)
+            );
             assert.strictEqual(job.getTimeLeft()?.toSeconds(), 870);
         }
     });
@@ -64,55 +90,108 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.isPercentFinished(0.5), undefined);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800));
+            const job = new scheduler.Job(
+                '1',
+                'Test Job',
+                'Running',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 0, 3600),
+                new WallTime(0, 0, 0, 1800)
+            );
             assert.strictEqual(job.isPercentFinished(0.8), false);
         }
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30));
+            const job = new scheduler.Job(
+                '1',
+                'Test Job',
+                'Running',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 15, 30)
+            );
             assert.strictEqual(job.isPercentFinished(0.5), true);
         }
     });
 
-
     test('sortJobs', () => {
         const jobsRef = [
-            new scheduler.Job('1', 'Test Job 1', 'RUNNING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 1800)),
-            new scheduler.Job('2', 'Test Job 2', 'COMPLETED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 30)),
-            new scheduler.Job('3', 'Test Job 3', 'PENDING', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 0, 3600), new WallTime(0, 0, 0, 0)),
-            new scheduler.Job('4', 'Test Job 4', 'FAILED', 'queue', 'batchFile', 'outputFile', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 15, 45)),
+            new scheduler.Job(
+                '1',
+                'Test Job 1',
+                'RUNNING',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 0, 3600),
+                new WallTime(0, 0, 0, 1800)
+            ),
+            new scheduler.Job(
+                '2',
+                'Test Job 2',
+                'COMPLETED',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 15, 30)
+            ),
+            new scheduler.Job(
+                '3',
+                'Test Job 3',
+                'PENDING',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 0, 3600),
+                new WallTime(0, 0, 0, 0)
+            ),
+            new scheduler.Job(
+                '4',
+                'Test Job 4',
+                'FAILED',
+                'queue',
+                'batchFile',
+                'outputFile',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 15, 45)
+            ),
         ];
 
         let jobs = jobsRef.slice();
         shuffleArray(jobs);
         scheduler.sortJobs(jobs, 'id');
-        assert.strictEqual(jobs[0].id, '1', "failed sort by id");
-        assert.strictEqual(jobs[1].id, '2', "failed sort by id");
-        assert.strictEqual(jobs[2].id, '3', "failed sort by id");
-        assert.strictEqual(jobs[3].id, '4', "failed sort by id");
+        assert.strictEqual(jobs[0].id, '1', 'failed sort by id');
+        assert.strictEqual(jobs[1].id, '2', 'failed sort by id');
+        assert.strictEqual(jobs[2].id, '3', 'failed sort by id');
+        assert.strictEqual(jobs[3].id, '4', 'failed sort by id');
 
         jobs = jobsRef.slice();
         shuffleArray(jobs);
         scheduler.sortJobs(jobs, 'name');
-        assert.strictEqual(jobs[0].name, 'Test Job 1', "failed sort by name");
-        assert.strictEqual(jobs[1].name, 'Test Job 2', "failed sort by name");
-        assert.strictEqual(jobs[2].name, 'Test Job 3', "failed sort by name");
-        assert.strictEqual(jobs[3].name, 'Test Job 4', "failed sort by name");
+        assert.strictEqual(jobs[0].name, 'Test Job 1', 'failed sort by name');
+        assert.strictEqual(jobs[1].name, 'Test Job 2', 'failed sort by name');
+        assert.strictEqual(jobs[2].name, 'Test Job 3', 'failed sort by name');
+        assert.strictEqual(jobs[3].name, 'Test Job 4', 'failed sort by name');
 
         jobs = jobsRef.slice();
         shuffleArray(jobs);
         scheduler.sortJobs(jobs, 'time left');
-        assert.strictEqual(jobs[0].id, '4', "failed sort by time left");
-        assert.strictEqual(jobs[1].id, '2', "failed sort by time left");
-        assert.strictEqual(jobs[2].id, '1', "failed sort by time left");
-        assert.strictEqual(jobs[3].id, '3', "failed sort by time left");
+        assert.strictEqual(jobs[0].id, '4', 'failed sort by time left');
+        assert.strictEqual(jobs[1].id, '2', 'failed sort by time left');
+        assert.strictEqual(jobs[2].id, '1', 'failed sort by time left');
+        assert.strictEqual(jobs[3].id, '3', 'failed sort by time left');
 
         jobs = jobsRef.slice();
         shuffleArray(jobs);
         scheduler.sortJobs(jobs, 'status');
-        assert.strictEqual(jobs[0].id, '2', "failed sort by status");
-        assert.strictEqual(jobs[1].id, '4', "failed sort by status");
-        assert.strictEqual(jobs[2].id, '3', "failed sort by status");
-        assert.strictEqual(jobs[3].id, '1', "failed sort by status");
+        assert.strictEqual(jobs[0].id, '2', 'failed sort by status');
+        assert.strictEqual(jobs[1].id, '4', 'failed sort by status');
+        assert.strictEqual(jobs[2].id, '3', 'failed sort by status');
+        assert.strictEqual(jobs[3].id, '1', 'failed sort by status');
 
         jobs = jobsRef.slice();
         scheduler.sortJobs(jobs, null);
@@ -122,7 +201,7 @@ suite('scheduler.ts tests', () => {
         assert.strictEqual(jobs[3].id, '4');
 
         jobs = jobsRef.slice();
-        scheduler.sortJobs(jobs, "invalid key");
+        scheduler.sortJobs(jobs, 'invalid key');
         assert.strictEqual(jobs[0].id, '1');
         assert.strictEqual(jobs[1].id, '2');
         assert.strictEqual(jobs[2].id, '3');
@@ -131,61 +210,142 @@ suite('scheduler.ts tests', () => {
 
     test('SchedulerDataColumn :: constructor', () => {
         assert.doesNotThrow(() => {
-            new scheduler.SchedulerDataColumn("column name", 255);
+            new scheduler.SchedulerDataColumn('column name', 255);
         });
 
         assert.throws(() => {
-            new scheduler.SchedulerDataColumn("column name", -1);
+            new scheduler.SchedulerDataColumn('column name', -1);
         });
 
         assert.throws(() => {
-            new scheduler.SchedulerDataColumn("column name", 0);
+            new scheduler.SchedulerDataColumn('column name', 0);
         });
 
         assert.throws(() => {
-            new scheduler.SchedulerDataColumn("column name", 1.5);
+            new scheduler.SchedulerDataColumn('column name', 1.5);
         });
 
         {
-            const col = new scheduler.SchedulerDataColumn("column name", 255);
-            assert.strictEqual(col.name, "column name");
+            const col = new scheduler.SchedulerDataColumn('column name', 255);
+            assert.strictEqual(col.name, 'column name');
             assert.strictEqual(col.chars, 255);
         }
 
         {
-            const col = new scheduler.SchedulerDataColumn("column name", undefined);
-            assert.strictEqual(col.name, "column name");
+            const col = new scheduler.SchedulerDataColumn('column name', undefined);
+            assert.strictEqual(col.name, 'column name');
             assert.strictEqual(col.chars, undefined);
         }
     });
 
     test('SchedulerDataColumn :: toString', () => {
         {
-            const col = new scheduler.SchedulerDataColumn("column name", 255);
-            assert.strictEqual(col.toString(), "column name:255");
+            const col = new scheduler.SchedulerDataColumn('column name', 255);
+            assert.strictEqual(col.toString(), 'column name:255');
         }
 
         {
-            const col = new scheduler.SchedulerDataColumn("column name", undefined);
-            assert.strictEqual(col.toString(), "column name");
+            const col = new scheduler.SchedulerDataColumn('column name', undefined);
+            assert.strictEqual(col.toString(), 'column name');
         }
     });
 
     test('Debug :: getQueue', () => {
         const jobs = [
-            new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
-            new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
-            new scheduler.Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
-            new scheduler.Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
-            new scheduler.Job("5", "job5", "PENDING", "debug", "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
-            new scheduler.Job("6", "job6", "COMPLETED", "debug", "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
-            new scheduler.Job("7", "job7", "TIMEOUT", "debug", "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
-            new scheduler.Job("8", "job8", "CANCELLED", "debug", "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
-            new scheduler.Job("9", "job9", "FAILED", "debug", "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
+            new scheduler.Job(
+                '1',
+                'job1',
+                'RUNNING',
+                'debug',
+                'job1.sh',
+                'job1.out',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 12, 43)
+            ),
+            new scheduler.Job(
+                '2',
+                'job2',
+                'RUNNING',
+                'debug',
+                'job2.sh',
+                'job2.out',
+                new WallTime(0, 1, 30, 0),
+                new WallTime(0, 1, 28, 1)
+            ),
+            new scheduler.Job(
+                '3',
+                'job3',
+                'RUNNING',
+                'debug',
+                'job3.sh',
+                'job3.out',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 1, 15)
+            ),
+            new scheduler.Job(
+                '4',
+                'job4',
+                'PENDING',
+                'debug',
+                'job4.sh',
+                'job4.out',
+                new WallTime(0, 1, 20, 40),
+                new WallTime(0, 0, 0, 0)
+            ),
+            new scheduler.Job(
+                '5',
+                'job5',
+                'PENDING',
+                'debug',
+                'job5.sh',
+                'job5.out',
+                new WallTime(1, 12, 0, 0),
+                new WallTime(0, 0, 0, 0)
+            ),
+            new scheduler.Job(
+                '6',
+                'job6',
+                'COMPLETED',
+                'debug',
+                'job6.sh',
+                'job6.out',
+                new WallTime(0, 7, 0, 0),
+                new WallTime(0, 7, 0, 0)
+            ),
+            new scheduler.Job(
+                '7',
+                'job7',
+                'TIMEOUT',
+                'debug',
+                'job7.sh',
+                'job7.out',
+                new WallTime(0, 1, 30, 0),
+                new WallTime(0, 1, 30, 0)
+            ),
+            new scheduler.Job(
+                '8',
+                'job8',
+                'CANCELLED',
+                'debug',
+                'job8.sh',
+                'job8.out',
+                new WallTime(0, 23, 59, 59),
+                new WallTime(0, 0, 0, 0)
+            ),
+            new scheduler.Job(
+                '9',
+                'job9',
+                'FAILED',
+                'debug',
+                'job9.sh',
+                'job9.out',
+                new WallTime(0, 0, 5, 0),
+                new WallTime(0, 0, 0, 0)
+            ),
         ];
 
         const debug = new scheduler.Debug();
-        debug.getQueue().then((res) => {
+        debug.getQueue().then(res => {
             assert.strictEqual(res.length, jobs.length);
             for (let i = 0; i < res.length; i++) {
                 assert.strictEqual(res[i].id, jobs[i].id);
@@ -203,19 +363,41 @@ suite('scheduler.ts tests', () => {
     test('Debug :: cancelJob', () => {
         let debug = new scheduler.Debug();
 
-        debug.cancelJob(new scheduler.Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)));
-        debug.cancelJob(new scheduler.Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)));
+        debug.cancelJob(
+            new scheduler.Job(
+                '1',
+                'job1',
+                'RUNNING',
+                'debug',
+                'job1.sh',
+                'job1.out',
+                new WallTime(0, 0, 30, 0),
+                new WallTime(0, 0, 12, 43)
+            )
+        );
+        debug.cancelJob(
+            new scheduler.Job(
+                '2',
+                'job2',
+                'RUNNING',
+                'debug',
+                'job2.sh',
+                'job2.out',
+                new WallTime(0, 1, 30, 0),
+                new WallTime(0, 1, 28, 1)
+            )
+        );
 
-        debug.getQueue().then((res) => {
+        debug.getQueue().then(res => {
             assert.strictEqual(res.length, 6);
-            assert.ok(res.every((job) => job.id !== "1" && job.id !== "2"));
+            assert.ok(res.every(job => job.id !== '1' && job.id !== '2'));
         });
     });
 
     test('Debug :: submitJob', () => {
         let debug = new scheduler.Debug();
 
-        assert.doesNotThrow(() => debug.submitJob("job1.sh"));
+        assert.doesNotThrow(() => debug.submitJob('job1.sh'));
     });
 
     test('Debug :: getJobOutput', () => {
@@ -229,17 +411,17 @@ suite('scheduler.ts tests', () => {
     });
 
     test('getScheduler', async () => {
-        let config = vscode.workspace.getConfiguration("slurm-dashboard");
-        
-        await config.update("backend", "slurm");
+        let config = vscode.workspace.getConfiguration('slurm-dashboard');
+
+        await config.update('backend', 'slurm');
         let sched = scheduler.getScheduler();
         assert.ok(sched instanceof scheduler.SlurmScheduler);
 
-        await config.update("backend", "debug");
+        await config.update('backend', 'debug');
         sched = scheduler.getScheduler();
         assert.ok(sched instanceof scheduler.Debug);
 
-        await config.update("backend", "invalid");
+        await config.update('backend', 'invalid');
         sched = scheduler.getScheduler();
         assert.ok(sched instanceof scheduler.SlurmScheduler);
     });

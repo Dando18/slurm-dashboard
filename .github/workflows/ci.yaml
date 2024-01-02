@@ -1,10 +1,10 @@
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
   pull_request:
-    branches: [ develop ]
+    branches: [develop]
   release:
-    types: [ created ]
+    types: [created]
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       - name: Run Tests
         if: runner.os != 'Linux'
         run: npm test
-  
+
   coverage:
     runs-on: ubuntu-latest
     needs: build
@@ -47,8 +47,21 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  check-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - name: Install Node.js Dependencies
+        run: npm install
+      - name: Check Format
+        run: npm run check-format
 
   publish:
     runs-on: ubuntu-latest
@@ -70,7 +83,7 @@ jobs:
       - name: Upload Release Artifact
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.vsix"
+          files: '*.vsix'
           fail_on_unmatched_files: true
       - name: Deploy
         run: npm run deploy
