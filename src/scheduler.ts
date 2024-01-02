@@ -85,11 +85,13 @@ export function sortJobs(jobs: Job[], key: string|null|undefined): void {
             if (aTimeLeft && bTimeLeft) {
                 return aTimeLeft.cmp(bTimeLeft);
             } else {
+                /* c8 ignore next 2 */
                 return 0;
             }
         } else if (key === "status") {
             return a.status.localeCompare(b.status);
         } else {
+            /* c8 ignore next 2 */
             return 0;
         }
     });
@@ -133,13 +135,21 @@ export interface Scheduler {
  * Represents a column available from the scheduler. A utility class used by SlurmScheduler
  * to format the input to the squeue command.
  */
-class SchedulerDataColumn {
+export class SchedulerDataColumn {
     /**
      * Creates a new instance of SchedulerDataColumn.
      * @param name The name of the column.
      * @param chars The number of characters in the column (optional).
      */
-    constructor(public name: string, public chars: number|undefined) {}
+    constructor(public name: string, public chars: number|undefined) {
+        if (chars !== undefined) {
+            if (!Number.isInteger(chars)) {
+                throw new Error(`chars must be an integer: ${chars}`);
+            } else if (+chars <= 0) {
+                throw new Error(`chars must be positive: ${chars}`);
+            }
+        }
+    }
 
     /**
      * Returns a string representation of the column.

@@ -33,7 +33,7 @@ export class JobScript extends vscode.TreeItem {
  * @param key - The key to determine the sorting order. Valid keys are "filename", "rel path", "last modified", "newest", and "oldest".
  * @returns void
  */
-function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void {
+export function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void {
     if (!key) {
         return;
     }
@@ -52,16 +52,19 @@ function sortJobsScripts(scripts: JobScript[], key: string|null|undefined): void
         } else if (key === "last modified") {
             if (a.stat && b.stat) {
                 return b.stat.mtime - a.stat.mtime;
-            } else {
+            } else { 
+                /* c8 ignore next 2 */
                 return 0;
             }
         } else if (key === "newest" || key === "oldest") {
             if (a.stat && b.stat) {
                 return (key === "newest") ? b.stat.ctime - a.stat.ctime : a.stat.ctime - b.stat.ctime;
-            } else {
+            } else { 
+                /* c8 ignore next 2 */
                 return 0;
             }
         } else {
+            /* c8 ignore next 2 */
             return 0;
         }
     });

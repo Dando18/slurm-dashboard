@@ -45,5 +45,140 @@ suite('jobscripts.ts tests', () => {
             assert.strictEqual(scripts.length, 3);
             assert.ok(scripts[0] instanceof jobscripts.JobScript);
             assert.strictEqual(scripts.filter((script) => script.label === 'job1.sbatch').length, 1);
+
+            let emptyChildren = await provider.getChildren(scripts[0]);
+            assert.ok(emptyChildren);
+            assert.strictEqual(emptyChildren.length, 0);
+        });
+
+        test('JobScriptProvider :: register', async () => {
+            const extension = vscode.extensions.getExtension("danielnichols.slurm-dashboard");
+            assert.ok(extension, "Extension not found");
+
+            const scheduler = new Debug();
+            const provider = new jobscripts.JobScriptProvider(scheduler);
+
+            let context: vscode.ExtensionContext|undefined = undefined;
+            context = await extension.activate();
+            assert.ok(context, "Extension context not found");
+
+            assert.throws(() => {
+                /* should already be initialized */
+                provider.register(context!);
+            });
+
+            /* assert that submit-dashboard commands are registered */
+            vscode.commands.getCommands(false).then((commands) => {
+                assert.ok(commands.includes('submit-dashboard.refresh'));
+                assert.ok(commands.includes('submit-dashboard.submit-all'));
+                assert.ok(commands.includes('submit-dashboard.submit'));
+                assert.ok(commands.includes('submit-dashboard.show-source'));
+            });
+        });
+
+        test('sortJobScripts', async () => {
+            const scheduler = new Debug();
+            const provider = new jobscripts.JobScriptProvider(scheduler);
+            
+            {   /* null key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=null  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, null);
+
+                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=null  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=null  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=null  invalid element 2");
+            }
+
+            {   /* unknown key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=unknown  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, "unknown key -- gibberish");
+
+                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=unknown  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=unknown  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=unknown  invalid element 2");
+            }
+
+            {   /* filename key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=filename  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, "filename");
+
+                assert.strictEqual(scripts[0].label, 'job1.sbatch', "sortJobScripts  key=filename  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job2.slurm', "sortJobScripts  key=filename  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=filename  invalid element 2");
+            }
+
+            {   /* rel path key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=rel path  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, "rel path");
+
+                assert.strictEqual(scripts[0].label, 'job1.sbatch', "sortJobScripts  key=rel path  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job2.slurm', "sortJobScripts  key=rel path  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=rel path  invalid element 2");
+            }
+
+            {   /* last modified key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=last modified  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, "last modified");
+
+                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=last modified  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=last modified  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=last modified  invalid element 2");
+            }
+
+            {   /* newest key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=newest  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, "newest");
+
+                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=newest  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=newest  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=newest  invalid element 2");
+            }
+
+            {   /* oldest key */
+                let scripts = await provider.getChildren();
+                assert.ok(scripts);
+                scripts = Array.from(scripts);
+                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=oldest  invalid scripts length");
+                jobscripts.sortJobsScripts(scripts, "oldest");
+
+                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=oldest  invalid element 0");
+                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=oldest  invalid element 1");
+                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=oldest  invalid element 2");
+            }
+
+        });
+
+        test('JobScriptProvider :: refresh', async () => {
+            const scheduler = new Debug();
+            const provider = new jobscripts.JobScriptProvider(scheduler);
+            
+            let scripts = await provider.getChildren();
+            assert.ok(scripts);
+            assert.strictEqual(scripts.length, 3);
+
+            await assert.doesNotThrow(async () => {
+                await provider.refresh();
+            });
+            scripts = await provider.getChildren();
+            assert.ok(scripts);
+            assert.strictEqual(scripts.length, 3);
         });
 });

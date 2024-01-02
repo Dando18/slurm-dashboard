@@ -120,6 +120,55 @@ suite('scheduler.ts tests', () => {
         assert.strictEqual(jobs[1].id, '2');
         assert.strictEqual(jobs[2].id, '3');
         assert.strictEqual(jobs[3].id, '4');
+
+        jobs = jobsRef.slice();
+        scheduler.sortJobs(jobs, "invalid key");
+        assert.strictEqual(jobs[0].id, '1');
+        assert.strictEqual(jobs[1].id, '2');
+        assert.strictEqual(jobs[2].id, '3');
+        assert.strictEqual(jobs[3].id, '4');
+    });
+
+    test('SchedulerDataColumn :: constructor', () => {
+        assert.doesNotThrow(() => {
+            new scheduler.SchedulerDataColumn("column name", 255);
+        });
+
+        assert.throws(() => {
+            new scheduler.SchedulerDataColumn("column name", -1);
+        });
+
+        assert.throws(() => {
+            new scheduler.SchedulerDataColumn("column name", 0);
+        });
+
+        assert.throws(() => {
+            new scheduler.SchedulerDataColumn("column name", 1.5);
+        });
+
+        {
+            const col = new scheduler.SchedulerDataColumn("column name", 255);
+            assert.strictEqual(col.name, "column name");
+            assert.strictEqual(col.chars, 255);
+        }
+
+        {
+            const col = new scheduler.SchedulerDataColumn("column name", undefined);
+            assert.strictEqual(col.name, "column name");
+            assert.strictEqual(col.chars, undefined);
+        }
+    });
+
+    test('SchedulerDataColumn :: toString', () => {
+        {
+            const col = new scheduler.SchedulerDataColumn("column name", 255);
+            assert.strictEqual(col.toString(), "column name:255");
+        }
+
+        {
+            const col = new scheduler.SchedulerDataColumn("column name", undefined);
+            assert.strictEqual(col.toString(), "column name");
+        }
     });
 
     test('Debug :: getQueue', () => {

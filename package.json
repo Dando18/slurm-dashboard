@@ -221,6 +221,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
+    "coverage": "c8 --clean npm run test",
     "package": "vsce package",
     "deploy": "vsce publish"
   },
@@ -231,6 +232,7 @@
     "@types/node": "20.2.5",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
+    "c8": "^8.0.1",
     "eslint": "^8.41.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
