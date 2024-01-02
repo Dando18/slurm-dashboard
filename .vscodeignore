@@ -9,3 +9,5 @@ coverage
 **/.eslintrc.json
 **/*.map
 **/*.ts
+.jobfile
+src/test/bin/**

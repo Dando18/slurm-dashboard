@@ -3,7 +3,9 @@ import * as assert from 'assert';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
+import { execSync } from 'child_process';
 import { WallTime } from '../../time';
+import { resolvePathRelativeToWorkspace } from '../../fileutilities';
 import * as scheduler from '../../scheduler';
 
 /*  Randomize array in-place using Durstenfeld shuffle algorithm 
@@ -248,6 +250,81 @@ suite('scheduler.ts tests', () => {
             const col = new scheduler.SchedulerDataColumn('column name', undefined);
             assert.strictEqual(col.toString(), 'column name');
         }
+    });
+
+    test('Slurm :: getQueue', async () => {
+        assert.doesNotThrow(async () => {
+            execSync('sreset');
+        });
+
+        assert.doesNotThrow(async () => {
+            const slurm = new scheduler.SlurmScheduler();
+            await slurm.getQueue();
+        });
+
+        {
+            const slurm = new scheduler.SlurmScheduler();
+            const queue = await slurm.getQueue();
+            assert.strictEqual(queue.length, 3);
+        }
+    });
+
+    test('Slurm :: cancelJob', async () => {
+        assert.doesNotThrow(async () => {
+            execSync('sreset');
+        });
+
+        const slurm = new scheduler.SlurmScheduler();
+        const queue = await slurm.getQueue();
+        const job = queue[0];
+
+        assert.doesNotThrow(() => {
+            slurm.cancelJob(job);
+        });
+
+        const newQueue = await slurm.getQueue();
+        assert.strictEqual(newQueue.length, 2);
+        assert.ok(newQueue.every(j => j.id !== job.id));
+
+        assert.doesNotThrow(() => {
+            slurm.cancelJob(job);
+            slurm.cancelJob(new scheduler.Job('invalid', 'invalid', 'invalid'));
+        });
+    });
+
+    test('Slurm :: submitJob', async () => {
+        assert.doesNotThrow(async () => {
+            execSync('sreset');
+
+            /* since slurm wrapper script uses a tmp file, we have to keep a consistent working directory */
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('setJobWorkingDirectoryToScriptDirectory', false);
+        });
+
+        const slurm = new scheduler.SlurmScheduler();
+        const queue = await slurm.getQueue();
+        assert.doesNotThrow(() => {
+            slurm.submitJob(resolvePathRelativeToWorkspace('job1.sbatch'));
+        });
+
+        const newQueue = await slurm.getQueue();
+        assert.strictEqual(newQueue.length, queue.length + 1);
+
+        assert.doesNotThrow(() => {
+            slurm.submitJob('not-a-real-file.sh');
+        });
+    });
+
+    test('Slurm :: getJobOutputPath', async () => {
+        assert.doesNotThrow(async () => {
+            execSync('sreset');
+        });
+
+        const slurm = new scheduler.SlurmScheduler();
+        const queue = await slurm.getQueue();
+
+        assert.strictEqual(slurm.getJobOutputPath(queue[0]), 'job1.out');
+        assert.strictEqual(slurm.getJobOutputPath(queue[1]), 'job2.out');
+        assert.strictEqual(slurm.getJobOutputPath(queue[2]), 'job3.out');
     });
 
     test('Debug :: getQueue', () => {

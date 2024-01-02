@@ -15,11 +15,16 @@ async function main() {
         // The path to the test workspace
         const testWorkspace = path.resolve(__dirname, '../../src/test/example-workspace');
 
+        // add ./bin to PATH
+        let updatedEnv = process.env;
+        updatedEnv.PATH = `${updatedEnv.PATH}:${path.resolve(__dirname, '../../src/test/bin')}`;
+
         // Download VS Code, unzip it and run the integration test
         await runTests({
             extensionDevelopmentPath,
             extensionTestsPath,
             launchArgs: [testWorkspace, '--disable-extensions'],
+            extensionTestsEnv: updatedEnv,
         });
     } catch (err) {
         console.error('Failed to run tests', err);
