@@ -4,3 +4,7 @@ node_modules
 .vscode-test/
 *.vsix
 src/test/example-workspace/.vscode
+coverage
+
+.jobfile
+src/test/bin/**

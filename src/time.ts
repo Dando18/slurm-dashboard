@@ -2,12 +2,10 @@
    Time utilities
 */
 
-
 /**
  * Represents a wall time duration in days, hours, minutes, and seconds.
  */
 export class WallTime {
-
     /**
      * Creates a new instance of WallTime.
      * @param days The number of days.
@@ -16,8 +14,15 @@ export class WallTime {
      * @param seconds The number of seconds.
      * @throws Error if any of the parameters are negative or not a number.
      */
-    constructor(public days: number, public hours: number, public minutes: number, public seconds: number) {
-        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0 || isNaN(days) || isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+    constructor(
+        public days: number,
+        public hours: number,
+        public minutes: number,
+        public seconds: number
+    ) {
+        // prettier-ignore
+        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0 || 
+            isNaN(days) || isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
             throw new Error("Invalid time");
         }
         this.normalize();
@@ -51,24 +56,24 @@ export class WallTime {
      * @throws Error if the time string is invalid.
      */
     public static fromString(time: string): WallTime {
-        let split = time.split(":");
+        let split = time.split(':');
         if (split.length > 3 || split.length === 0) {
-            throw new Error("Invalid time string " + time);
+            throw new Error('Invalid time string ' + time);
         }
 
-        const dashIndex: number = split[0].indexOf("-");
+        const dashIndex: number = split[0].indexOf('-');
         if (split.length === 3 && dashIndex !== -1) {
             const daysStr: string = split[0].substring(0, dashIndex);
-            const hoursStr: string = split[0].substring(dashIndex+1);
+            const hoursStr: string = split[0].substring(dashIndex + 1);
 
             if (isNaN(+daysStr) || isNaN(+hoursStr)) {
-                throw new Error("Invalid numbers in time string " + time);
+                throw new Error('Invalid numbers in time string ' + time);
             }
             split = [daysStr, hoursStr, ...split.slice(1)];
         }
 
-        if (split.some((s) => isNaN(+s))) {
-            throw new Error("Invalid numbers in time string " + time);
+        if (split.some(s => isNaN(+s))) {
+            throw new Error('Invalid numbers in time string ' + time);
         }
 
         split = split.reverse();
@@ -85,7 +90,7 @@ export class WallTime {
      * @returns The padded number as a string.
      */
     private pad(n: number): string {
-        return n < 10 ? "0" + n : "" + n;
+        return n < 10 ? '0' + n : '' + n;
     }
 
     /**
@@ -118,7 +123,12 @@ export class WallTime {
      * @returns A new WallTime object representing the sum of the two wall times.
      */
     public add(other: WallTime): WallTime {
-        return new WallTime(this.days + other.days, this.hours + other.hours, this.minutes + other.minutes, this.seconds + other.seconds);
+        return new WallTime(
+            this.days + other.days,
+            this.hours + other.hours,
+            this.minutes + other.minutes,
+            this.seconds + other.seconds
+        );
     }
 
     /**

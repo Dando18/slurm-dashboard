@@ -18,9 +18,19 @@
     "vscode": "^1.85.1"
   },
   "categories": [
+    "Visualization",
     "Other"
   ],
-  "extensionKind": ["workspace"],
+  "keywords": [
+    "Slurm",
+    "HPC",
+    "Workload Manager",
+    "Jobs",
+    "Scheduler"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
@@ -167,7 +177,10 @@
           "description": "Prompt before cancelling all jobs."
         },
         "slurm-dashboard.job-dashboard.refreshInterval": {
-          "type": ["number", "null"],
+          "type": [
+            "number",
+            "null"
+          ],
           "default": 300,
           "description": "How many seconds between refreshing job queue. Set to null to disable automatic refresh."
         },
@@ -177,18 +190,28 @@
           "description": "Use native icons for job status instead of custom extension ones."
         },
         "slurm-dashboard.job-dashboard.extrapolationInterval": {
-          "type": ["number", "null"],
+          "type": [
+            "number",
+            "null"
+          ],
           "default": null,
           "description": "Extrapolate the job run times in the UI without querying the workload manager. Allows you to set a high job-dashboard.refreshInterval, but still see more realistic job run times. This has the danger of coming out of sync with the real times or not portraying job completion/failure, so it is turned off by default. A value of null disables extrapolation."
         },
         "slurm-dashboard.job-dashboard.sortBy": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
           "description": "Sort the job list by this column. Set to null to leave the order returned by the workload manager. Choices: [\"id\", \"name\", \"time left\", \"status\"] Default: null"
         },
         "slurm-dashboard.submit-dashboard.jobScriptExtensions": {
           "type": "array",
-          "default": [".slurm", ".sbatch", ".job"],
+          "default": [
+            ".slurm",
+            ".sbatch",
+            ".job"
+          ],
           "description": "File extensions used to identify job scripts."
         },
         "slurm-dashboard.submit-dashboard.promptBeforeSubmitAll": {
@@ -197,7 +220,10 @@
           "description": "Prompt before submitting all job scripts."
         },
         "slurm-dashboard.submit-dashboard.sortBy": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": "last modified",
           "description": "Sort the job script list by this column. Set to null to leave the order the glob pattern discovered the files. Choices: [\"filename\", \"rel path\", \"last modified\", \"newest\", \"oldest\"] Default: last modified"
         },
@@ -220,7 +246,10 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
+    "format": "prettier --write \"src/**/*.{ts,json}\" \"./**/*.{md,json,yaml,yml}\"",
+    "check-format": "prettier --check \"src/**/*.{ts,json}\" \"./**/*.{md,json,yaml,yml}\"",
     "test": "node ./out/test/runTest.js",
+    "coverage": "c8 --clean npm run test",
     "package": "vsce package",
     "deploy": "vsce publish"
   },
@@ -231,6 +260,8 @@
     "@types/node": "20.2.5",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
+    "c8": "^8.0.1",
+    "prettier": "^3.1.1",
     "eslint": "^8.41.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",

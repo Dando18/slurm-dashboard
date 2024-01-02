@@ -6,20 +6,21 @@ import * as vscode from 'vscode';
 import * as fu from '../../fileutilities';
 
 suite('fileutilities.ts tests', () => {
-    
-	test('resolvePathRelativeToWorkspace', () => {
-        {   // absolute path
+    test('resolvePathRelativeToWorkspace', () => {
+        {
+            // absolute path
             const filePath = 'src/fileutilities.ts';
             const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? '';
             const expectedUri = vscode.Uri.joinPath(vscode.Uri.file(workspaceRoot), filePath);
             const actualUri = fu.resolvePathRelativeToWorkspace(filePath);
-            assert.strictEqual(actualUri.toString(), expectedUri.toString(), "relative path");
+            assert.strictEqual(actualUri.toString(), expectedUri.toString(), 'relative path');
         }
-        {   // relative path
+        {
+            // relative path
             const filePath = 'file:///home/daniel/dev/personal/vscode-extensions/slurm-dashboard/src/fileutilities.ts';
             const expectedUri = vscode.Uri.file(filePath);
             const actualUri = fu.resolvePathRelativeToWorkspace(filePath);
-            assert.strictEqual(actualUri.toString(), expectedUri.toString(), "absolute path");
+            assert.strictEqual(actualUri.toString(), expectedUri.toString(), 'absolute path');
         }
     });
 
