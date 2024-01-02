@@ -81,27 +81,27 @@ suite('jobscripts.ts tests', () => {
             const provider = new jobscripts.JobScriptProvider(scheduler);
             
             {   /* null key */
-                let scripts = await provider.getChildren();
+                const scripts = await provider.getChildren();
                 assert.ok(scripts);
-                scripts = Array.from(scripts);
-                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=null  invalid scripts length");
-                jobscripts.sortJobsScripts(scripts, null);
-
-                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=null  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=null  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=null  invalid element 2");
+                let newScripts = Array.from(scripts);
+                assert.strictEqual(newScripts.length, 3, "sortJobScripts  key=null  invalid scripts length");
+                
+                jobscripts.sortJobsScripts(newScripts, null);
+                newScripts.forEach((script, idx) => {
+                    assert.strictEqual(script.label, scripts[idx].label, `sortJobScripts  key=null  invalid element ${idx}`);
+                });
             }
 
             {   /* unknown key */
-                let scripts = await provider.getChildren();
+                const scripts = await provider.getChildren();
                 assert.ok(scripts);
-                scripts = Array.from(scripts);
-                assert.strictEqual(scripts.length, 3, "sortJobScripts  key=unknown  invalid scripts length");
-                jobscripts.sortJobsScripts(scripts, "unknown key -- gibberish");
+                let newScripts = Array.from(scripts);
+                assert.strictEqual(newScripts.length, 3, "sortJobScripts  key=unknown  invalid scripts length");
 
-                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=unknown  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=unknown  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=unknown  invalid element 2");
+                jobscripts.sortJobsScripts(newScripts, "unknown key -- gibberish");
+                newScripts.forEach((script, idx) => {
+                    assert.strictEqual(script.label, scripts[idx].label, `sortJobScripts  key=null  invalid element ${idx}`);
+                });
             }
 
             {   /* filename key */
