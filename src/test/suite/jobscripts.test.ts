@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import * as jobscripts from '../../jobscripts';
 import { WallTime } from '../../time';
 import { Job, Debug } from '../../scheduler';
+import { getBaseName, getPathRelativeToWorkspaceRoot } from '../../fileutilities';
 
 suite('jobscripts.ts tests', () => {
         
@@ -111,9 +112,8 @@ suite('jobscripts.ts tests', () => {
                 assert.strictEqual(scripts.length, 3, "sortJobScripts  key=filename  invalid scripts length");
                 jobscripts.sortJobsScripts(scripts, "filename");
 
-                assert.strictEqual(scripts[0].label, 'job1.sbatch', "sortJobScripts  key=filename  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job2.slurm', "sortJobScripts  key=filename  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=filename  invalid element 2");
+                assert.ok(getBaseName(scripts[0].fpath) <= getBaseName(scripts[1].fpath), "sortJobScripts  key=filename");
+                assert.ok(getBaseName(scripts[1].fpath) <= getBaseName(scripts[2].fpath), "sortJobScripts  key=filename");
             }
 
             {   /* rel path key */
@@ -123,9 +123,8 @@ suite('jobscripts.ts tests', () => {
                 assert.strictEqual(scripts.length, 3, "sortJobScripts  key=rel path  invalid scripts length");
                 jobscripts.sortJobsScripts(scripts, "rel path");
 
-                assert.strictEqual(scripts[0].label, 'job1.sbatch', "sortJobScripts  key=rel path  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job2.slurm', "sortJobScripts  key=rel path  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=rel path  invalid element 2");
+                assert.ok(getPathRelativeToWorkspaceRoot(scripts[0].fpath) <= getPathRelativeToWorkspaceRoot(scripts[1].fpath), "sortJobScripts  key=rel path");
+                assert.ok(getPathRelativeToWorkspaceRoot(scripts[1].fpath) <= getPathRelativeToWorkspaceRoot(scripts[2].fpath), "sortJobScripts  key=rel path");
             }
 
             {   /* last modified key */
@@ -134,10 +133,12 @@ suite('jobscripts.ts tests', () => {
                 scripts = Array.from(scripts);
                 assert.strictEqual(scripts.length, 3, "sortJobScripts  key=last modified  invalid scripts length");
                 jobscripts.sortJobsScripts(scripts, "last modified");
+                scripts.forEach((script) => {
+                    assert.ok(script.stat, "sortJobScripts  key=last modified  invalid stat");
+                });
 
-                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=last modified  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=last modified  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=last modified  invalid element 2");
+                assert.ok(scripts[0].stat!.mtime >= scripts[1].stat!.mtime, `sortJobScripts  key=last modified  ${scripts[0].stat!.mtime} < ${scripts[1].stat!.mtime}`);
+                assert.ok(scripts[1].stat!.mtime >= scripts[2].stat!.mtime, `sortJobScripts  key=last modified  ${scripts[1].stat!.mtime} < ${scripts[2].stat!.mtime}`);
             }
 
             {   /* newest key */
@@ -146,10 +147,12 @@ suite('jobscripts.ts tests', () => {
                 scripts = Array.from(scripts);
                 assert.strictEqual(scripts.length, 3, "sortJobScripts  key=newest  invalid scripts length");
                 jobscripts.sortJobsScripts(scripts, "newest");
+                scripts.forEach((script) => {
+                    assert.ok(script.stat, "sortJobScripts  key=newest  invalid stat");
+                });
 
-                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=newest  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=newest  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=newest  invalid element 2");
+                assert.ok(scripts[0].stat!.ctime >= scripts[1].stat!.ctime, `sortJobScripts  key=newest  ${scripts[0].stat!.ctime} < ${scripts[1].stat!.ctime}`);
+                assert.ok(scripts[1].stat!.ctime >= scripts[2].stat!.ctime, `sortJobScripts  key=newest  ${scripts[1].stat!.ctime} < ${scripts[2].stat!.ctime}`);
             }
 
             {   /* oldest key */
@@ -158,10 +161,12 @@ suite('jobscripts.ts tests', () => {
                 scripts = Array.from(scripts);
                 assert.strictEqual(scripts.length, 3, "sortJobScripts  key=oldest  invalid scripts length");
                 jobscripts.sortJobsScripts(scripts, "oldest");
+                scripts.forEach((script) => {
+                    assert.ok(script.stat, "sortJobScripts  key=oldest  invalid stat");
+                });
 
-                assert.strictEqual(scripts[0].label, 'job2.slurm', "sortJobScripts  key=oldest  invalid element 0");
-                assert.strictEqual(scripts[1].label, 'job1.sbatch', "sortJobScripts  key=oldest  invalid element 1");
-                assert.strictEqual(scripts[2].label, 'job3.job', "sortJobScripts  key=oldest  invalid element 2");
+                assert.ok(scripts[0].stat!.ctime <= scripts[1].stat!.ctime, `sortJobScripts  key=newest  ${scripts[0].stat!.ctime} < ${scripts[1].stat!.ctime}`);
+                assert.ok(scripts[1].stat!.ctime <= scripts[2].stat!.ctime, `sortJobScripts  key=newest  ${scripts[1].stat!.ctime} < ${scripts[2].stat!.ctime}`);
             }
 
         });
