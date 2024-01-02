@@ -42,7 +42,7 @@ jobs:
       - name: Install Node.js Dependencies
         run: npm install
       - name: Coverage
-        run: npm run coverage
+        run: xvfb-run -a npm run coverage
       - name: Upload coverage to CodeCov
         uses: codecov/codecov-action@v3
         with:
