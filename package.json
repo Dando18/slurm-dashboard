@@ -18,7 +18,15 @@
     "vscode": "^1.85.1"
   },
   "categories": [
+    "Visualization",
     "Other"
+  ],
+  "keywords": [
+    "Slurm",
+    "HPC",
+    "Workload Manager",
+    "Jobs",
+    "Scheduler"
   ],
   "extensionKind": [
     "workspace"

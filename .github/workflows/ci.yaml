@@ -1,3 +1,4 @@
+name: CI
 on:
   push:
     branches: [develop]
@@ -18,7 +19,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
       - name: Install Node.js Dependencies
         run: npm install
       - name: Run Linux Tests
@@ -38,7 +39,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
       - name: Install Node.js Dependencies
         run: npm install
       - name: Coverage
@@ -57,7 +58,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
       - name: Install Node.js Dependencies
         run: npm install
       - name: Check Format
@@ -75,7 +76,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
       - name: Install Node.js Dependencies
         run: npm install
       - name: Package
