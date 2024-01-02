@@ -119,6 +119,14 @@ export interface Scheduler {
      */
     submitJob(jobScript: string|vscode.Uri): void;
 
+    /**
+     * Retrieve the output path for a job file. Is permitted to simply return 
+     * job.outputFile. Returns undefined if the job does not have an output file.
+     * @param job The job for which to retrieve the output path.
+     * @returns The output path for the job or undefined if the job does not have an output file.
+     */
+    getJobOutputPath(job: Job): string|undefined;
+
 }
 
 /**
@@ -281,11 +289,10 @@ export class SlurmScheduler implements Scheduler {
                 results["State"],
                 results["Partition"],
                 results["Command"],
-                results["STDOUT"],
+                undefined,  /* let this be filled in by getJobOutputPath later */
                 WallTime.fromString(results["TimeLimit"]),
                 WallTime.fromString(results["TimeUsed"])
             );
-            job.outputFile = this.resolveStdoutPath(job);
             jobs.push(job);
         });
 
@@ -293,24 +300,52 @@ export class SlurmScheduler implements Scheduler {
     }
 
     /**
-     * Resolves the path for the standard output file of a job.
-     * If the job does not have an output file, returns undefined.
-     * Replaces "%A" in the output file path with the job id.
+     * Finds the path for the standard output file of a job.
+     * Returns job.outputFile if it is already defined.
+     * Otherwise uses scontrol to find the output file.
      * 
      * @param job The job for which to resolve the stdout path.
      * @returns The resolved stdout path or undefined if the job does not have an output file.
      */
-    private resolveStdoutPath(job: Job): string|undefined {
-        if (!job.outputFile) {
-            return undefined;
+    public getJobOutputPath(job: Job): string|undefined {
+        /* early exit if it's already defined */
+        if (job.outputFile) {
+            return job.outputFile;
         }
 
-        let stdoutPath = job.outputFile;
+        const command = `scontrol show job ${job.id}`;
 
-        /* replace %A in the job path with the job id */
-        stdoutPath = stdoutPath.replace("%A", job.id);
+        try {
+            const output = execSync(command).toString().trim();
 
-        return stdoutPath;
+            /* find line that starts with StdOut */
+            const lines = output.split("\n");
+            let stdoutLine: string|undefined = undefined;
+            for (let line of lines) {
+                if (line.trim().startsWith("StdOut=")) {
+                    stdoutLine = line.trim();
+                    break;
+                }
+            }
+
+            /* if we didn't find a line, return undefined */
+            if (!stdoutLine) {
+                throw new Error(`Failed to find stdout line in output: ${output}`);
+            }
+
+            /* extract path from line: StdOut=/path/to/file */
+            const parts = stdoutLine.split("=");
+            if (parts.length < 2) {
+                throw new Error(`Failed to parse stdout line: ${stdoutLine}`);
+            }
+            const fpath = parts[1].trim();
+
+            job.outputFile = fpath;
+            return fpath;
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to get job output path for job ${job.id}.\nError: ${error}`);
+            return undefined;
+        }
     }
 
 }
@@ -356,6 +391,16 @@ export class Debug implements Scheduler {
     public submitJob(jobScript: string|vscode.Uri): void {
         vscode.window.showInformationMessage(`Submit job ${jobScript}`);
     }
+
+    /**
+     * For the debug scheduler, just returns the job's output file.
+     * @param job The job for which to retrieve the output path.
+     * @returns The output path for the job or undefined if the job does not have an output file.
+     */
+    public getJobOutputPath(job: Job): string|undefined {
+        return job.outputFile;
+    }
+
 }
 
 /**

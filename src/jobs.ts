@@ -271,15 +271,15 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem|InfoIte
      * @param jobItem The job item.
      */
     private showOutput(jobItem: JobItem): void {
-        if (jobItem.job.outputFile) {
-            const fpath = resolvePathRelativeToWorkspace(jobItem.job.outputFile);
-            vscode.workspace.openTextDocument(fpath).then((doc) => {
+        const fpath = this.scheduler.getJobOutputPath(jobItem.job);
+        if (fpath) {
+            vscode.workspace.openTextDocument(resolvePathRelativeToWorkspace(fpath)).then((doc) => {
                 vscode.window.showTextDocument(doc);
             }, (error) => {
                 vscode.window.showErrorMessage(`Failed to open output file ${jobItem.job.outputFile}.\n${error}`);
             });
         } else {
-            vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
+            vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated output file.`);
         }
     }
 
