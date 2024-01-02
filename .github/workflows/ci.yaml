@@ -27,6 +27,11 @@ jobs:
         run: |
           sh src/test/setup-slurm-wrapper.sh
           xvfb-run -a npm test
+      - name: Run MacOS Tests
+        if: runner.os == 'macOS'
+        run: |
+          sh src/test/setup-slurm-wrapper.sh
+          npm test
       - name: Run Tests
         if: runner.os != 'Linux'
         run: npm test

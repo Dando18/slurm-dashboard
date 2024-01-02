@@ -297,7 +297,9 @@ suite('scheduler.ts tests', () => {
             execSync('sreset');
 
             /* since slurm wrapper script uses a tmp file, we have to keep a consistent working directory */
-            await vscode.workspace.getConfiguration('slurm-dashboard').update('setJobWorkingDirectoryToScriptDirectory', false);
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('setJobWorkingDirectoryToScriptDirectory', false);
         });
 
         const slurm = new scheduler.SlurmScheduler();
