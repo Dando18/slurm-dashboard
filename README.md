@@ -81,43 +81,22 @@ like when enabled is shown below.
 
 ## Known Issues
 
-The following issues are known:
+### Submitting Issues
 
+Issues can be submitted under the [issues tab on GitHub](https://github.com/Dando18/slurm-dashboard/issues).
 
 ## Release Notes
 
-### 0.0.7
+See the [Changelog](/CHANGELOG.md) for the entire change history.
 
-- fix submit issue, so now submitting jobs should work on all systems
-- fix bug with parsing _Command_ column of squeue
-- support for finding job output files when they contains special substitutions
-  (i.e. `output-%A.txt`)
-- increased documentation
+### 0.0.8
 
-### 0.0.6
+- handle all slurm output file patterns by getting the output file path from `scontrol`
 
-- enabling time formatting for multi-day jobs
 
-### 0.0.5
+# License
 
-- add sorting in UI for jobs and job scripts; several options for sorting order
-- more complete CI testing
+Copyright Daniel Nichols 2024
 
-### 0.0.4
-
-- added option to extrapolate job run times in the UI
-
-### 0.0.3
-
-- update icons for job queue
-
-### 0.0.2
-
-- update logo and readme
-
-### 0.0.1
-
-- Slurm support
-- Job queue view
-- Job script view
+Slurm Dashboard is published under the [Apache 2.0 license](/LICENSE).
 
