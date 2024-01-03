@@ -1,6 +1,6 @@
 coverage:
   precision: 2
   round: nearest
-  range: 80...100
+  range: 60...90
 
 comment: off
