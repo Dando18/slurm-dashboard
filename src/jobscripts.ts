@@ -178,11 +178,12 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
      * @returns A promise that resolves to true if all job scripts were submitted, false otherwise.
      */
     private submitAll(): Thenable<boolean> {
-        const shouldPrompt = vscode.workspace
+        const shouldPrompt: boolean = vscode.workspace
             .getConfiguration('slurm-dashboard')
             .get('submit-dashboard.promptBeforeSubmitAll', true);
 
         if (shouldPrompt) {
+            /* c8 ignore start */
             const numJobs = this.jobScripts.length;
             return vscode.window
                 .showInformationMessage(`Are you sure you want to submit all ${numJobs} jobs?`, 'Yes', 'No')
@@ -192,6 +193,7 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
                     }
                     return value === 'Yes';
                 });
+            /* c8 ignore stop */
         } else {
             this.jobScripts.forEach(jobScript => this.submit(jobScript));
             return Promise.resolve(true);

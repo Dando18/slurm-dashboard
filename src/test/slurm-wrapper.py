@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 import os
+import sys
 
 # parse args
 parser = ArgumentParser()
-parser.add_argument('--jobfile', type=str, default='.jobfile')
+parser.add_argument('--jobfile', type=str, default='/tmp/.jobfile')
 subparsers = parser.add_subparsers(dest='command')
 subparsers.add_parser('sreset')
 
@@ -54,6 +55,8 @@ def write_jobs(job_list):
             f.write(str(job) + '\n')
 
 def read_jobs():
+    if not os.path.exists(args.jobfile):
+        exit(1)
     with open(args.jobfile, 'r') as f:
         return [Job.fromStr(line) for line in f]
 

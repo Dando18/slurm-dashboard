@@ -5,8 +5,8 @@ import { JobScriptProvider } from './jobscripts';
 
 export function activate(context: vscode.ExtensionContext): vscode.ExtensionContext {
     let scheduler = getScheduler();
-    new JobQueueProvider(scheduler).register(context);
 
+    new JobQueueProvider(scheduler).register(context);
     new JobScriptProvider(scheduler).register(context);
 
     return context;

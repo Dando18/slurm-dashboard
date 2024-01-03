@@ -53,42 +53,52 @@ suite('jobs.ts tests', () => {
         await config.update('job-dashboard.useNativeIcons', false);
         {
             const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'));
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('running.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('running.svg'));
         }
         {
             const jobItem = new jobs.JobItem(
-                new Job(
-                    '2',
-                    'Test Job',
-                    'RUNNING',
-                    'queue',
-                    'batch',
-                    'out',
-                    new WallTime(0, 0, 30, 0),
-                    new WallTime(0, 0, 29, 30)
-                )
+                /* prettier-ignore */
+                new Job('2','Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('running-orange.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('running-orange.svg'));
         }
         {
             const jobItem = new jobs.JobItem(new Job('4', 'Test Job', 'PENDING'));
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('pending.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('pending.svg'));
         }
         {
             const jobItem = new jobs.JobItem(new Job('5', 'Test Job', 'COMPLETED'));
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('completed.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('completed.svg'));
         }
         {
             const jobItem = new jobs.JobItem(new Job('6', 'Test Job', 'TIMEOUT'));
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('error.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('error.svg'));
         }
         {
             const jobItem = new jobs.JobItem(new Job('7', 'Test Job', 'CANCELLED'));
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('error.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('error.svg'));
         }
         {
             const jobItem = new jobs.JobItem(new Job('8', 'Test Job', 'FAILED'));
-            assert.ok(jobItem.getIconPath()?.toString().endsWith('error.svg'));
+            const iconPath = jobItem.getIconPath();
+            assert.ok(iconPath !== undefined);
+            assert.ok(iconPath.toString().endsWith('error.svg'));
+        }
+        {
+            const jobItem = new jobs.JobItem(new Job('9', 'Test Job', 'GIBBERISH'));
+            assert.ok(jobItem.getIconPath() === undefined);
         }
 
         await config.update('job-dashboard.useNativeIcons', true);
@@ -98,16 +108,8 @@ suite('jobs.ts tests', () => {
         }
         {
             const jobItem = new jobs.JobItem(
-                new Job(
-                    '2',
-                    'Test Job',
-                    'RUNNING',
-                    'queue',
-                    'batch',
-                    'out',
-                    new WallTime(0, 0, 30, 0),
-                    new WallTime(0, 0, 29, 30)
-                )
+                /* prettier-ignore */
+                new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('play'));
         }
@@ -130,6 +132,10 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(new Job('8', 'Test Job', 'FAILED'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('error'));
+        }
+        {
+            const jobItem = new jobs.JobItem(new Job('9', 'Test Job', 'GIBBERISH'));
+            assert.ok(jobItem.getIconPath() === undefined);
         }
     });
 
@@ -253,18 +259,129 @@ suite('jobs.ts tests', () => {
     });
 
     test('JobQueueProvider :: getChildren', async () => {
+        {
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.showJobInfo', false);
+            const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
+            const children = await jobQueueProvider.getChildren();
+            assert.ok(children);
+            assert.strictEqual(children.length, 9);
+            assert.strictEqual(children[0].label, 'job1');
+            assert.strictEqual(children[1].label, 'job2');
+            assert.strictEqual(children[2].label, 'job3');
+            assert.strictEqual(children[3].label, 'job4');
+            assert.strictEqual(children[4].label, 'job5');
+            assert.strictEqual(children[5].label, 'job6');
+            assert.strictEqual(children[6].label, 'job7');
+            assert.strictEqual(children[7].label, 'job8');
+            assert.strictEqual(children[8].label, 'job9');
+        }
+        {
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.showJobInfo', true);
+            const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
+            const children = await jobQueueProvider.getChildren();
+            assert.ok(children);
+            assert.strictEqual(children.length, 9);
+
+            const job1Items = await jobQueueProvider.getChildren(children[0]);
+            assert.ok(job1Items);
+            assert.strictEqual(job1Items.length, 7);
+            job1Items.forEach(item => {
+                assert.ok(item instanceof jobs.InfoItem);
+            });
+
+            const emptyItem = await jobQueueProvider.getChildren(job1Items[0]);
+            assert.ok(emptyItem);
+            assert.strictEqual(emptyItem.length, 0);
+        }
+    });
+
+    test('JobQueueProvider :: register', async () => {
         const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
-        const children = await jobQueueProvider.getChildren();
-        assert.ok(children);
-        assert.strictEqual(children.length, 9);
-        assert.strictEqual(children[0].label, 'job1');
-        assert.strictEqual(children[1].label, 'job2');
-        assert.strictEqual(children[2].label, 'job3');
-        assert.strictEqual(children[3].label, 'job4');
-        assert.strictEqual(children[4].label, 'job5');
-        assert.strictEqual(children[5].label, 'job6');
-        assert.strictEqual(children[6].label, 'job7');
-        assert.strictEqual(children[7].label, 'job8');
-        assert.strictEqual(children[8].label, 'job9');
+        const extension = vscode.extensions.getExtension('danielnichols.slurm-dashboard');
+        assert.ok(extension, 'Extension not found');
+        const context = await extension?.activate();
+        assert.ok(context, 'Context not found');
+
+        assert.throws(() => {
+            jobQueueProvider.register(context!);
+        });
+    });
+
+    test('JobQueueProvider :: timers', async function () {
+        await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.refreshInterval', 0.01);
+        await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.extrapolationInterval', 0.01);
+
+        const extension = vscode.extensions.getExtension('danielnichols.slurm-dashboard');
+        assert.ok(extension !== undefined, 'Extension not found');
+
+        assert.doesNotThrow(async () => {
+            await extension.activate();
+        });
+    });
+
+    test('commands :: job-dashboard.refresh', async function () {
+        assert.doesNotThrow(async () => {
+            await vscode.commands.executeCommand('job-dashboard.refresh');
+        });
+    });
+
+    test('commands :: job-dashboard.cancel-all', async function () {
+        assert.doesNotThrow(async () => {
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('job-dashboard.promptBeforeCancelAll', true);
+            await vscode.commands.executeCommand('job-dashboard.cancel-all');
+        });
+
+        assert.doesNotThrow(async () => {
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('job-dashboard.promptBeforeCancelAll', false);
+            await vscode.commands.executeCommand('job-dashboard.cancel-all');
+        });
+    });
+
+    test('commands :: job-dashboard.cancel', async function () {
+        assert.doesNotThrow(async () => {
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.promptBeforeCancel', true);
+            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            await vscode.commands.executeCommand('job-dashboard.cancel', jobItem);
+        });
+        assert.doesNotThrow(async () => {
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('job-dashboard.promptBeforeCancel', false);
+            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            await vscode.commands.executeCommand('job-dashboard.cancel', jobItem);
+        });
+    });
+
+    test('commands :: job-dashboard.cancel-and-resubmit', async function () {
+        assert.doesNotThrow(async () => {
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.promptBeforeCancel', true);
+            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            await vscode.commands.executeCommand('job-dashboard.cancel-and-resubmit', jobItem);
+        });
+        assert.doesNotThrow(async () => {
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('job-dashboard.promptBeforeCancel', false);
+            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            await vscode.commands.executeCommand('job-dashboard.cancel-and-resubmit', jobItem);
+        });
+    });
+
+    test('commands :: job-dashboard.show-output', async function () {
+        assert.doesNotThrow(async () => {
+            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            await vscode.commands.executeCommand('job-dashboard.show-output', jobItem);
+        });
+    });
+
+    test('commands :: job-dashboard.show-source', async function () {
+        assert.doesNotThrow(async () => {
+            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            await vscode.commands.executeCommand('job-dashboard.show-source', jobItem);
+        });
     });
 });
