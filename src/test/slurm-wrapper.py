@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 import os
+import sys
 
 # parse args
 parser = ArgumentParser()
@@ -55,7 +56,7 @@ def write_jobs(job_list):
 
 def read_jobs():
     if not os.path.exists(args.jobfile):
-        print(f"Not jobfile found in {os.getcwd()}")
+        print(f"Not jobfile found in {os.getcwd()}", file=sys.stderr)
         exit(1)
     with open(args.jobfile, 'r') as f:
         return [Job.fromStr(line) for line in f]
