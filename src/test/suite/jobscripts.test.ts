@@ -251,13 +251,28 @@ suite('jobscripts.ts tests', () => {
         fs.unlinkSync(fpath.fsPath);
     });
 
-    test('commands :: submit-dashboard.submit-all', async function () {
-        assert.doesNotThrow(async () => {
-            await vscode.workspace
-                .getConfiguration('slurm-dashboard')
-                .update('submit-dashboard.promptBeforeSubmitAll', true);
-            vscode.commands.executeCommand('submit-dashboard.submit-all');
-        });
+    test('commands :: submit-dashboard.submit-all', async function() {
+        {
+            assert.doesNotThrow(async () => {
+                execSync('sreset');
+            });
+
+            let scheduler = new SlurmScheduler();
+            let provider = new jobscripts.JobScriptProvider(scheduler);
+            const scripts = await provider.getChildren();
+            assert.ok(scripts, 'no scripts found');
+            const oldJobs = await scheduler.getQueue();
+
+            await assert.doesNotThrow(async () => {
+                await vscode.workspace
+                    .getConfiguration('slurm-dashboard')
+                    .update('submit-dashboard.promptBeforeSubmitAll', true);
+                vscode.commands.executeCommand('submit-dashboard.submit-all');
+            });
+
+            const newJobs = await scheduler.getQueue();
+            assert.strictEqual(newJobs.length, oldJobs.length + scripts.length, 'invalid jobs length');
+        }
 
         assert.doesNotThrow(async () => {
             await vscode.workspace
