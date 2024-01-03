@@ -1,11 +1,13 @@
 import * as assert from 'assert';
+import * as fs from 'fs';
+import { execSync } from 'child_process';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 import * as jobscripts from '../../jobscripts';
 import { WallTime } from '../../time';
-import { Job, Debug } from '../../scheduler';
+import { Job, Debug, SlurmScheduler } from '../../scheduler';
 import { getBaseName, getPathRelativeToWorkspaceRoot } from '../../fileutilities';
 
 suite('jobscripts.ts tests', () => {
@@ -222,5 +224,70 @@ suite('jobscripts.ts tests', () => {
         scripts = await provider.getChildren();
         assert.ok(scripts);
         assert.strictEqual(scripts.length, 3);
+    });
+
+    test('commands :: submit-dashboard.refresh', async () => {
+        const scheduler = new Debug();
+        const provider = new jobscripts.JobScriptProvider(scheduler);
+        const oldScripts = await provider.getChildren();
+        assert.ok(oldScripts, 'no scripts found');
+        assert.strictEqual(oldScripts.length, 3, 'invalid scripts length');
+
+        /* write a new job file to the workspace */
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? '';
+        const fpath = vscode.Uri.joinPath(vscode.Uri.file(workspaceRoot), 'new-job.sbatch');
+        const jobFile = `#!/bin/bash\necho "Hello, world!"\n`;
+        fs.writeFileSync(fpath.fsPath, jobFile);
+
+        await assert.doesNotThrow(async () => {
+            await vscode.commands.executeCommand('submit-dashboard.refresh');
+        });
+
+        const newScripts = await provider.getChildren();
+        assert.ok(newScripts, 'no scripts found');
+        assert.strictEqual(newScripts.length, 4, 'invalid scripts length');
+
+        /* delete scratch file */
+        fs.unlinkSync(fpath.fsPath);
+    });
+
+    test('commands :: submit-dashboard.submit-all', async function () {
+        assert.doesNotThrow(async () => {
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('submit-dashboard.promptBeforeSubmitAll', true);
+            vscode.commands.executeCommand('submit-dashboard.submit-all');
+        });
+
+        assert.doesNotThrow(async () => {
+            await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('submit-dashboard.promptBeforeSubmitAll', false);
+            vscode.commands.executeCommand('submit-dashboard.submit-all');
+        });
+    });
+
+    test('commands :: submit', async function () {
+        const scheduler = new Debug();
+        const provider = new jobscripts.JobScriptProvider(scheduler);
+        const scripts = await provider.getChildren();
+        assert.ok(scripts, 'no scripts found');
+        assert.strictEqual(scripts.length, 3, 'invalid scripts length');
+
+        assert.doesNotThrow(async () => {
+            await vscode.commands.executeCommand('submit-dashboard.submit', scripts[0]);
+        });
+    });
+
+    test('commands :: show-source', async function () {
+        const scheduler = new Debug();
+        const provider = new jobscripts.JobScriptProvider(scheduler);
+        const scripts = await provider.getChildren();
+        assert.ok(scripts, 'no scripts found');
+        assert.strictEqual(scripts.length, 3, 'invalid scripts length');
+
+        assert.doesNotThrow(async () => {
+            await vscode.commands.executeCommand('submit-dashboard.show-source', scripts[0]);
+        });
     });
 });

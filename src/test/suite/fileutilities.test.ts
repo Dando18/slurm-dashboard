@@ -25,11 +25,26 @@ suite('fileutilities.ts tests', () => {
     });
 
     test('getParentDirectory', () => {
-        const filePath = '/home/daniel/dev/personal/vscode-extensions/slurm-dashboard/src/fileutilities.ts';
-        const expectedParentDirectory = '/home/daniel/dev/personal/vscode-extensions/slurm-dashboard/src';
+        {
+            const filePath = '/home/daniel/dev/personal/vscode-extensions/slurm-dashboard/src/fileutilities.ts';
+            const expectedParentDirectory = '/home/daniel/dev/personal/vscode-extensions/slurm-dashboard/src';
 
-        const actualParentDirectory = fu.getParentDirectory(filePath);
+            const actualParentDirectory = fu.getParentDirectory(filePath);
+            assert.strictEqual(actualParentDirectory, expectedParentDirectory);
+        }
+        {
+            const filePath = 'just-base-file.txt';
+            const expectedParentDirectory = '';
 
-        assert.strictEqual(actualParentDirectory, expectedParentDirectory);
+            const actualParentDirectory = fu.getParentDirectory(filePath);
+            assert.strictEqual(actualParentDirectory, expectedParentDirectory);
+        }
+        {
+            const filePath = '';
+            const expectedParentDirectory = '';
+
+            const actualParentDirectory = fu.getParentDirectory(filePath);
+            assert.strictEqual(actualParentDirectory, expectedParentDirectory);
+        }
     });
 });
