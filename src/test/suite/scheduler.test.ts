@@ -309,7 +309,8 @@ suite('scheduler.ts tests', () => {
         }
 
         assert.doesNotThrow(async () => {
-            execSync('sreset');
+            const workspaceRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+            execSync('sreset', { cwd: workspaceRoot });
 
             /* since slurm wrapper script uses a tmp file, we have to keep a consistent working directory */
             await vscode.workspace
