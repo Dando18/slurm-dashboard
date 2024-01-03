@@ -5,7 +5,7 @@ import sys
 
 # parse args
 parser = ArgumentParser()
-parser.add_argument('--jobfile', type=str, default='.jobfile')
+parser.add_argument('--jobfile', type=str, default='/tmp/.jobfile')
 subparsers = parser.add_subparsers(dest='command')
 subparsers.add_parser('sreset')
 
