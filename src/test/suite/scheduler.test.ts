@@ -308,6 +308,10 @@ suite('scheduler.ts tests', () => {
             this.skip();
         }
 
+        await vscode.workspace
+                .getConfiguration('slurm-dashboard')
+                .update('setJobWorkingDirectoryToScriptDirectory', false);
+
         assert.doesNotThrow(async () => {
             execSync('sreset');
 
