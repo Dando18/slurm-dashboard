@@ -2,7 +2,7 @@
 
 ### 0.0.9
 
-- bug fix: handle unlimited wall time for jobs
+-   bug fix: handle unlimited wall time for jobs
 
 ### 0.0.8
 

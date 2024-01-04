@@ -89,7 +89,7 @@ See the [Changelog](/CHANGELOG.md) for the entire change history.
 
 ### 0.0.9
 
-- bug fix: handle unlimited wall time for jobs
+-   bug fix: handle unlimited wall time for jobs
 
 # License
 
