@@ -3,7 +3,7 @@
   "displayName": "Slurm Dashboard",
   "publisher": "danielnichols",
   "description": "A dashboard for the Slurm workload manager.",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": {
     "name": "Daniel Nichols",
     "url": "https://cs.umd.edu/~dnicho"

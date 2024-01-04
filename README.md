@@ -87,9 +87,9 @@ Issues can be submitted under the [issues tab on GitHub](https://github.com/Dand
 
 See the [Changelog](/CHANGELOG.md) for the entire change history.
 
-### 0.0.8
+### 0.0.9
 
--   handle all slurm output file patterns by getting the output file path from `scontrol`
+- bug fix: handle unlimited wall time for jobs
 
 # License
 
