@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { execSync, exec } from 'child_process';
 import { WallTime } from './time';
 import { getParentDirectory } from './fileutilities';
+import { returnIfNoThrow } from './util';
 
 /**
  * Represents a job in the scheduler.
@@ -171,14 +172,14 @@ export class SlurmScheduler implements Scheduler {
      * The columns of the scheduler data we are querying squeue for.
      */
     private readonly columns: SchedulerDataColumn[] = [
-        new SchedulerDataColumn('JobID', 15),
-        new SchedulerDataColumn('Name', 35),
-        new SchedulerDataColumn('State', 25),
-        new SchedulerDataColumn('Partition', 25),
-        new SchedulerDataColumn('QOS', 25),
+        new SchedulerDataColumn('JobID', 255),
+        new SchedulerDataColumn('Name', 255),
+        new SchedulerDataColumn('State', 255),
+        new SchedulerDataColumn('Partition', 255),
+        new SchedulerDataColumn('QOS', 255),
         new SchedulerDataColumn('STDOUT', 255),
-        new SchedulerDataColumn('TimeLimit', 15),
-        new SchedulerDataColumn('TimeUsed', 15),
+        new SchedulerDataColumn('TimeLimit', 255),
+        new SchedulerDataColumn('TimeUsed', 255),
         new SchedulerDataColumn('Command', 255), // command last since it can sometimes have spaces in it
     ];
 
@@ -294,6 +295,9 @@ export class SlurmScheduler implements Scheduler {
                 results[col.name] = val;
             }
 
+            const timeLimit = returnIfNoThrow(() => WallTime.fromString(results['TimeLimit']));
+            const timeUsed = returnIfNoThrow(() => WallTime.fromString(results['TimeUsed']));
+
             /* create job */
             let job = new Job(
                 results['JobID'],
@@ -302,8 +306,8 @@ export class SlurmScheduler implements Scheduler {
                 results['Partition'],
                 results['Command'],
                 undefined /* let this be filled in by getJobOutputPath later */,
-                WallTime.fromString(results['TimeLimit']),
-                WallTime.fromString(results['TimeUsed'])
+                timeLimit,
+                timeUsed
             );
             jobs.push(job);
         });
