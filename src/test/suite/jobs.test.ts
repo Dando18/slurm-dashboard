@@ -21,7 +21,7 @@ suite('jobs.ts tests', () => {
 
     test('JobItem :: constructor', () => {
         {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), true);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), true);
             assert.strictEqual(jobItem.label, 'Test Job');
             assert.strictEqual(jobItem.description, '');
             assert.strictEqual(jobItem.tooltip, `1 (RUNNING)`);
@@ -30,6 +30,7 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(
                 new Job(
+                    '2',
                     '2',
                     'Test Job',
                     'PENDING',
@@ -52,7 +53,7 @@ suite('jobs.ts tests', () => {
         let config = vscode.workspace.getConfiguration('slurm-dashboard');
         await config.update('job-dashboard.useNativeIcons', false);
         {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'));
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'));
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('running.svg'));
@@ -60,88 +61,88 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(
                 /* prettier-ignore */
-                new Job('2','Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
+                new Job('2','2','Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('running-orange.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('4', 'Test Job', 'PENDING'));
+            const jobItem = new jobs.JobItem(new Job('4', '4', 'Test Job', 'PENDING'));
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('pending.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('5', 'Test Job', 'COMPLETED'));
+            const jobItem = new jobs.JobItem(new Job('5', '5', 'Test Job', 'COMPLETED'));
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('completed.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('6', 'Test Job', 'TIMEOUT'));
+            const jobItem = new jobs.JobItem(new Job('6', '6', 'Test Job', 'TIMEOUT'));
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('error.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('7', 'Test Job', 'CANCELLED'));
+            const jobItem = new jobs.JobItem(new Job('7', '7', 'Test Job', 'CANCELLED'));
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('error.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('8', 'Test Job', 'FAILED'));
+            const jobItem = new jobs.JobItem(new Job('8', '8', 'Test Job', 'FAILED'));
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
             assert.ok(iconPath.toString().endsWith('error.svg'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('9', 'Test Job', 'GIBBERISH'));
+            const jobItem = new jobs.JobItem(new Job('9', '9', 'Test Job', 'GIBBERISH'));
             assert.ok(jobItem.getIconPath() === undefined);
         }
 
         await config.update('job-dashboard.useNativeIcons', true);
         {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'));
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('play'));
         }
         {
             const jobItem = new jobs.JobItem(
                 /* prettier-ignore */
-                new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
+                new Job('2', '2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('play'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('4', 'Test Job', 'PENDING'));
+            const jobItem = new jobs.JobItem(new Job('4', '4', 'Test Job', 'PENDING'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('ellipsis'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('5', 'Test Job', 'COMPLETED'));
+            const jobItem = new jobs.JobItem(new Job('5', '5', 'Test Job', 'COMPLETED'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('check'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('6', 'Test Job', 'TIMEOUT'));
+            const jobItem = new jobs.JobItem(new Job('6', '6', 'Test Job', 'TIMEOUT'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('warning'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('7', 'Test Job', 'CANCELLED'));
+            const jobItem = new jobs.JobItem(new Job('7', '7', 'Test Job', 'CANCELLED'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('error'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('8', 'Test Job', 'FAILED'));
+            const jobItem = new jobs.JobItem(new Job('8', '8', 'Test Job', 'FAILED'));
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('error'));
         }
         {
-            const jobItem = new jobs.JobItem(new Job('9', 'Test Job', 'GIBBERISH'));
+            const jobItem = new jobs.JobItem(new Job('9', '9', 'Test Job', 'GIBBERISH'));
             assert.ok(jobItem.getIconPath() === undefined);
         }
     });
 
     test('JobItem :: getInfoItems', () => {
         {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), true);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), true);
             const infoItems = jobItem.getInfoItems();
             assert.strictEqual(infoItems.length, 3);
             assert.strictEqual(infoItems[0].label, 'id');
@@ -152,13 +153,14 @@ suite('jobs.ts tests', () => {
             assert.strictEqual(infoItems[2].value, 'RUNNING');
         }
         {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             const infoItems = jobItem.getInfoItems();
             assert.strictEqual(infoItems.length, 0);
         }
         {
             const jobItem = new jobs.JobItem(
                 new Job(
+                    '2',
                     '2',
                     'Test Job',
                     'PENDING',
@@ -193,6 +195,7 @@ suite('jobs.ts tests', () => {
         {
             const job = new Job(
                 '1',
+                '1',
                 'Test Job',
                 'RUNNING',
                 'queue',
@@ -211,6 +214,7 @@ suite('jobs.ts tests', () => {
         {
             const job = new Job(
                 '1',
+                '1',
                 'Test Job',
                 'PENDING',
                 'queue',
@@ -228,6 +232,7 @@ suite('jobs.ts tests', () => {
         }
         {
             const job = new Job(
+                '1',
                 '1',
                 'Test Job',
                 'RUNNING',
@@ -254,7 +259,7 @@ suite('jobs.ts tests', () => {
 
     test('JobQueueProvider :: getTreeItem', () => {
         const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
-        const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), true);
+        const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), true);
         assert.strictEqual(jobQueueProvider.getTreeItem(jobItem), jobItem);
     });
 
@@ -264,32 +269,35 @@ suite('jobs.ts tests', () => {
             const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
             const children = await jobQueueProvider.getChildren();
             assert.ok(children);
-            assert.strictEqual(children.length, 9);
+            assert.strictEqual(children.length, 7);
             assert.strictEqual(children[0].label, 'job1');
-            assert.strictEqual(children[1].label, 'job2');
-            assert.strictEqual(children[2].label, 'job3');
-            assert.strictEqual(children[3].label, 'job4');
-            assert.strictEqual(children[4].label, 'job5');
-            assert.strictEqual(children[5].label, 'job6');
-            assert.strictEqual(children[6].label, 'job7');
-            assert.strictEqual(children[7].label, 'job8');
-            assert.strictEqual(children[8].label, 'job9');
+            assert.strictEqual(children[1].label, 'job4');
+            assert.strictEqual(children[2].label, 'job5');
+            assert.strictEqual(children[3].label, 'job6');
+            assert.strictEqual(children[4].label, 'job7');
+            assert.strictEqual(children[5].label, 'job8');
+            assert.strictEqual(children[6].label, 'job9');
         }
         {
             await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.showJobInfo', true);
             const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
             const children = await jobQueueProvider.getChildren();
             assert.ok(children);
-            assert.strictEqual(children.length, 9);
+            assert.strictEqual(children.length, 7);
 
+            /* job 1 is root of job array with 2 children */
             const job1Items = await jobQueueProvider.getChildren(children[0]);
             assert.ok(job1Items);
-            assert.strictEqual(job1Items.length, 7);
+            assert.strictEqual(job1Items.length, 2);
             job1Items.forEach(item => {
-                assert.ok(item instanceof jobs.InfoItem);
+                assert.ok(item instanceof jobs.JobItem);
             });
 
-            const emptyItem = await jobQueueProvider.getChildren(job1Items[0]);
+            const infoItems = await jobQueueProvider.getChildren(job1Items[0]);
+            assert.ok(infoItems);
+            assert.strictEqual(infoItems.length, 7);
+
+            const emptyItem = await jobQueueProvider.getChildren(infoItems[0]);
             assert.ok(emptyItem);
             assert.strictEqual(emptyItem.length, 0);
         }
@@ -344,14 +352,14 @@ suite('jobs.ts tests', () => {
     test('commands :: job-dashboard.cancel', async function () {
         assert.doesNotThrow(async () => {
             await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.promptBeforeCancel', true);
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             await vscode.commands.executeCommand('job-dashboard.cancel', jobItem);
         });
         assert.doesNotThrow(async () => {
             await vscode.workspace
                 .getConfiguration('slurm-dashboard')
                 .update('job-dashboard.promptBeforeCancel', false);
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             await vscode.commands.executeCommand('job-dashboard.cancel', jobItem);
         });
     });
@@ -359,28 +367,28 @@ suite('jobs.ts tests', () => {
     test('commands :: job-dashboard.cancel-and-resubmit', async function () {
         assert.doesNotThrow(async () => {
             await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.promptBeforeCancel', true);
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             await vscode.commands.executeCommand('job-dashboard.cancel-and-resubmit', jobItem);
         });
         assert.doesNotThrow(async () => {
             await vscode.workspace
                 .getConfiguration('slurm-dashboard')
                 .update('job-dashboard.promptBeforeCancel', false);
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             await vscode.commands.executeCommand('job-dashboard.cancel-and-resubmit', jobItem);
         });
     });
 
     test('commands :: job-dashboard.show-output', async function () {
         assert.doesNotThrow(async () => {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             await vscode.commands.executeCommand('job-dashboard.show-output', jobItem);
         });
     });
 
     test('commands :: job-dashboard.show-source', async function () {
         assert.doesNotThrow(async () => {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
+            const jobItem = new jobs.JobItem(new Job('1', '1', 'Test Job', 'RUNNING'), false);
             await vscode.commands.executeCommand('job-dashboard.show-source', jobItem);
         });
     });
