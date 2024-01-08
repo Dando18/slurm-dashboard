@@ -21,13 +21,15 @@ export class Job {
      */
     constructor(
         public id: string,
+        public arrayId: string,
         public name: string,
         public status: string,
         public queue?: string,
         public batchFile?: string,
         public outputFile?: string,
         public maxTime?: WallTime,
-        public curTime?: WallTime
+        public curTime?: WallTime,
+        public isInJobArray?: boolean
     ) {}
 
     /**
@@ -52,6 +54,18 @@ export class Job {
             return this.curTime.toSeconds() / this.maxTime.toSeconds() >= percent;
         } else {
             return undefined;
+        }
+    }
+
+    /**
+     * Checks if the current job is the root of a job array.
+     * @returns A boolean value indicating whether the job is the root of a job array.
+     */
+    public isJobArrayRoot(): boolean | undefined {
+        if (this.isInJobArray === undefined) {
+            return undefined;
+        } else {
+            return this.isInJobArray && this.id === this.arrayId;
         }
     }
 }
@@ -140,7 +154,8 @@ export class SchedulerDataColumn {
      */
     constructor(
         public name: string,
-        public chars: number | undefined
+        public chars: number | undefined,
+        public suffix: string = ''
     ) {
         if (chars !== undefined) {
             if (!Number.isInteger(chars)) {
@@ -157,7 +172,9 @@ export class SchedulerDataColumn {
      */
     public toString(): string {
         if (this.chars) {
-            return `${this.name}:${this.chars}`;
+            return `${this.name}:${this.chars}${this.suffix}`;
+        } else if (this.suffix !== '') {
+            return `${this.name}:${this.suffix}`;
         } else {
             return this.name;
         }
@@ -172,15 +189,16 @@ export class SlurmScheduler implements Scheduler {
      * The columns of the scheduler data we are querying squeue for.
      */
     private readonly columns: SchedulerDataColumn[] = [
-        new SchedulerDataColumn('JobID', 255),
-        new SchedulerDataColumn('Name', 255),
-        new SchedulerDataColumn('State', 255),
-        new SchedulerDataColumn('Partition', 255),
-        new SchedulerDataColumn('QOS', 255),
-        new SchedulerDataColumn('STDOUT', 255),
-        new SchedulerDataColumn('TimeLimit', 255),
-        new SchedulerDataColumn('TimeUsed', 255),
-        new SchedulerDataColumn('Command', 255), // command last since it can sometimes have spaces in it
+        new SchedulerDataColumn('JobID', 25, ' '),
+        new SchedulerDataColumn('JobArrayID', 25, ' '),
+        new SchedulerDataColumn('Name', 255, ' '),
+        new SchedulerDataColumn('State', 50, ' '),
+        new SchedulerDataColumn('Partition', 255, ' '),
+        new SchedulerDataColumn('QOS', 255, ' '),
+        new SchedulerDataColumn('STDOUT', 1024, ' '),
+        new SchedulerDataColumn('TimeLimit', 25, ' '),
+        new SchedulerDataColumn('TimeUsed', 25, ' '),
+        new SchedulerDataColumn('Command', 1024, ' '), // command last since it can sometimes have spaces in it
     ];
 
     /**
@@ -256,7 +274,7 @@ export class SlurmScheduler implements Scheduler {
      */
     private getQueueOutput(): Thenable<string | undefined> {
         const columnsString = this.columns.join(',');
-        const command = `squeue --me --noheader -O ${columnsString}`;
+        const command = `squeue --me --noheader -O "${columnsString}"`;
 
         return new Promise((resolve, reject) => {
             exec(command, (error, stdout, stderr) => {
@@ -301,18 +319,45 @@ export class SlurmScheduler implements Scheduler {
             /* create job */
             let job = new Job(
                 results['JobID'],
+                results['JobArrayID'],
                 results['Name'],
                 results['State'],
                 results['Partition'],
                 results['Command'],
                 undefined /* let this be filled in by getJobOutputPath later */,
                 timeLimit,
-                timeUsed
+                timeUsed,
+                results['JobId'] === results['JobArrayId'] ? true : undefined /* patch isInJobArray later */
             );
             jobs.push(job);
         });
 
+        /* patch isInJobArray property */
+        this.patchArrayJobs(jobs);
+
         return jobs;
+    }
+
+    /**
+     * Finds all the jobs in a queue that are part of a job array and sets their isInJobArray property to true.
+     * Sets isInJobArray to false for all other jobs.
+     * @param jobs A set of jobs in a queue
+     */
+    private patchArrayJobs(jobs: Job[]): void {
+        /* find all jobs that are part of a job array */
+        let arrayJobIds: Set<string> = new Set();
+        for (const job of jobs) {
+            /*  if arrayId is different than jobId, then it's part of a job array
+                and arrayId is the main id of the job array */
+            if (job.arrayId !== job.id) {
+                arrayJobIds.add(job.arrayId);
+            }
+        }
+
+        /* if a job's arrayId is in arrayJobIds, then it's part of a job array */
+        for (const job of jobs) {
+            job.isInJobArray = arrayJobIds.has(job.arrayId);
+        }
     }
 
     /**
@@ -371,15 +416,15 @@ export class Debug implements Scheduler {
      */
     // prettier-ignore
     private jobs: Job[] = [
-        new Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
-        new Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
-        new Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
-        new Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
-        new Job("5", "job5", "PENDING", "debug", "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
-        new Job("6", "job6", "COMPLETED", "debug", "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
-        new Job("7", "job7", "TIMEOUT", "debug", "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
-        new Job("8", "job8", "CANCELLED", "debug", "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
-        new Job("9", "job9", "FAILED", "debug", "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
+        new Job("1", "1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43), true),
+        new Job("2", "1", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1), true),
+        new Job("3", "1", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15), true),
+        new Job("4", "4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0), false),
+        new Job("5", "5", "job5", "PENDING", "debug", "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0), false),
+        new Job("6", "6", "job6", "COMPLETED", "debug", "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0), false),
+        new Job("7", "7", "job7", "TIMEOUT", "debug", "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0), false),
+        new Job("8", "8", "job8", "CANCELLED", "debug", "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0), false),
+        new Job("9", "9", "job9", "FAILED", "debug", "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0), false),
     ];
 
     /**
