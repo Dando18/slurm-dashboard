@@ -21,8 +21,9 @@ function shuffleArray(array: any[]) {
 suite('scheduler.ts tests', () => {
     test('Job :: constructor', () => {
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running');
+            const job = new scheduler.Job('1', '1', 'Test Job', 'Running');
             assert.strictEqual(job.id, '1');
+            assert.strictEqual(job.arrayId, '1');
             assert.strictEqual(job.name, 'Test Job');
             assert.strictEqual(job.status, 'Running');
             assert.strictEqual(job.queue, undefined);
@@ -30,19 +31,23 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.outputFile, undefined);
             assert.strictEqual(job.maxTime, undefined);
             assert.strictEqual(job.curTime, undefined);
+            assert.strictEqual(job.isInJobArray, undefined);
         }
         {
             const job = new scheduler.Job(
                 '1',
+                '2',
                 'Test Job',
                 'Running',
                 'queue',
                 'batchFile',
                 'outputFile',
                 new WallTime(0, 0, 0, 3600),
-                new WallTime(0, 0, 0, 1800)
+                new WallTime(0, 0, 0, 1800),
+                true
             );
             assert.strictEqual(job.id, '1');
+            assert.strictEqual(job.arrayId, '2');
             assert.strictEqual(job.name, 'Test Job');
             assert.strictEqual(job.status, 'Running');
             assert.strictEqual(job.queue, 'queue');
@@ -50,16 +55,18 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.outputFile, 'outputFile');
             assert.strictEqual(job.maxTime?.toSeconds(), 3600);
             assert.strictEqual(job.curTime?.toSeconds(), 1800);
+            assert.strictEqual(job.isInJobArray, true);
         }
     });
 
     test('Job :: getTimeLeft', () => {
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running');
+            const job = new scheduler.Job('1', '1', 'Test Job', 'Running');
             assert.strictEqual(job.getTimeLeft(), undefined);
         }
         {
             const job = new scheduler.Job(
+                '1',
                 '1',
                 'Test Job',
                 'Running',
@@ -73,6 +80,7 @@ suite('scheduler.ts tests', () => {
         }
         {
             const job = new scheduler.Job(
+                '1',
                 '1',
                 'Test Job',
                 'Running',
@@ -88,11 +96,12 @@ suite('scheduler.ts tests', () => {
 
     test('Job :: isPercentFinished', () => {
         {
-            const job = new scheduler.Job('1', 'Test Job', 'Running');
+            const job = new scheduler.Job('1', '1', 'Test Job', 'Running');
             assert.strictEqual(job.isPercentFinished(0.5), undefined);
         }
         {
             const job = new scheduler.Job(
+                '1',
                 '1',
                 'Test Job',
                 'Running',
@@ -106,6 +115,7 @@ suite('scheduler.ts tests', () => {
         }
         {
             const job = new scheduler.Job(
+                '1',
                 '1',
                 'Test Job',
                 'Running',
@@ -123,6 +133,7 @@ suite('scheduler.ts tests', () => {
         const jobsRef = [
             new scheduler.Job(
                 '1',
+                '1',
                 'Test Job 1',
                 'RUNNING',
                 'queue',
@@ -132,6 +143,7 @@ suite('scheduler.ts tests', () => {
                 new WallTime(0, 0, 0, 1800)
             ),
             new scheduler.Job(
+                '2',
                 '2',
                 'Test Job 2',
                 'COMPLETED',
@@ -143,6 +155,7 @@ suite('scheduler.ts tests', () => {
             ),
             new scheduler.Job(
                 '3',
+                '3',
                 'Test Job 3',
                 'PENDING',
                 'queue',
@@ -152,6 +165,7 @@ suite('scheduler.ts tests', () => {
                 new WallTime(0, 0, 0, 0)
             ),
             new scheduler.Job(
+                '4',
                 '4',
                 'Test Job 4',
                 'FAILED',
@@ -298,7 +312,7 @@ suite('scheduler.ts tests', () => {
 
         assert.doesNotThrow(() => {
             slurm.cancelJob(job);
-            slurm.cancelJob(new scheduler.Job('invalid', 'invalid', 'invalid'));
+            slurm.cancelJob(new scheduler.Job('invalid', 'invalid', 'invalid', 'invalid'));
         });
     });
 
@@ -353,35 +367,42 @@ suite('scheduler.ts tests', () => {
         const jobs = [
             new scheduler.Job(
                 '1',
+                '1',
                 'job1',
                 'RUNNING',
                 'debug',
                 'job1.sh',
                 'job1.out',
                 new WallTime(0, 0, 30, 0),
-                new WallTime(0, 0, 12, 43)
+                new WallTime(0, 0, 12, 43),
+                true
             ),
             new scheduler.Job(
                 '2',
+                '1',
                 'job2',
                 'RUNNING',
                 'debug',
                 'job2.sh',
                 'job2.out',
                 new WallTime(0, 1, 30, 0),
-                new WallTime(0, 1, 28, 1)
+                new WallTime(0, 1, 28, 1),
+                true
             ),
             new scheduler.Job(
                 '3',
+                '1',
                 'job3',
                 'RUNNING',
                 'debug',
                 'job3.sh',
                 'job3.out',
                 new WallTime(0, 0, 30, 0),
-                new WallTime(0, 0, 1, 15)
+                new WallTime(0, 0, 1, 15),
+                true
             ),
             new scheduler.Job(
+                '4',
                 '4',
                 'job4',
                 'PENDING',
@@ -389,9 +410,11 @@ suite('scheduler.ts tests', () => {
                 'job4.sh',
                 'job4.out',
                 new WallTime(0, 1, 20, 40),
-                new WallTime(0, 0, 0, 0)
+                new WallTime(0, 0, 0, 0),
+                false
             ),
             new scheduler.Job(
+                '5',
                 '5',
                 'job5',
                 'PENDING',
@@ -399,9 +422,11 @@ suite('scheduler.ts tests', () => {
                 'job5.sh',
                 'job5.out',
                 new WallTime(1, 12, 0, 0),
-                new WallTime(0, 0, 0, 0)
+                new WallTime(0, 0, 0, 0),
+                false
             ),
             new scheduler.Job(
+                '6',
                 '6',
                 'job6',
                 'COMPLETED',
@@ -409,9 +434,11 @@ suite('scheduler.ts tests', () => {
                 'job6.sh',
                 'job6.out',
                 new WallTime(0, 7, 0, 0),
-                new WallTime(0, 7, 0, 0)
+                new WallTime(0, 7, 0, 0),
+                false
             ),
             new scheduler.Job(
+                '7',
                 '7',
                 'job7',
                 'TIMEOUT',
@@ -419,9 +446,11 @@ suite('scheduler.ts tests', () => {
                 'job7.sh',
                 'job7.out',
                 new WallTime(0, 1, 30, 0),
-                new WallTime(0, 1, 30, 0)
+                new WallTime(0, 1, 30, 0),
+                false
             ),
             new scheduler.Job(
+                '8',
                 '8',
                 'job8',
                 'CANCELLED',
@@ -429,9 +458,11 @@ suite('scheduler.ts tests', () => {
                 'job8.sh',
                 'job8.out',
                 new WallTime(0, 23, 59, 59),
-                new WallTime(0, 0, 0, 0)
+                new WallTime(0, 0, 0, 0),
+                false
             ),
             new scheduler.Job(
+                '9',
                 '9',
                 'job9',
                 'FAILED',
@@ -439,7 +470,8 @@ suite('scheduler.ts tests', () => {
                 'job9.sh',
                 'job9.out',
                 new WallTime(0, 0, 5, 0),
-                new WallTime(0, 0, 0, 0)
+                new WallTime(0, 0, 0, 0),
+                false
             ),
         ];
 
@@ -448,6 +480,7 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(res.length, jobs.length);
             for (let i = 0; i < res.length; i++) {
                 assert.strictEqual(res[i].id, jobs[i].id);
+                assert.strictEqual(res[i].arrayId, jobs[i].arrayId);
                 assert.strictEqual(res[i].name, jobs[i].name);
                 assert.strictEqual(res[i].status, jobs[i].status);
                 assert.strictEqual(res[i].queue, jobs[i].queue);
@@ -455,6 +488,7 @@ suite('scheduler.ts tests', () => {
                 assert.strictEqual(res[i].outputFile, jobs[i].outputFile);
                 assert.strictEqual(res[i].maxTime?.toSeconds(), jobs[i].maxTime?.toSeconds());
                 assert.strictEqual(res[i].curTime?.toSeconds(), jobs[i].curTime?.toSeconds());
+                assert.strictEqual(res[i].isInJobArray, jobs[i].isInJobArray);
             }
         });
     });
@@ -464,6 +498,7 @@ suite('scheduler.ts tests', () => {
 
         debug.cancelJob(
             new scheduler.Job(
+                '1',
                 '1',
                 'job1',
                 'RUNNING',
@@ -477,6 +512,7 @@ suite('scheduler.ts tests', () => {
         debug.cancelJob(
             new scheduler.Job(
                 '2',
+                '1',
                 'job2',
                 'RUNNING',
                 'debug',
