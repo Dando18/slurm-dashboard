@@ -16,7 +16,7 @@ mkdir -p ./bin
 
 createCommand() {
     echo "#!/bin/sh" > ./bin/$1
-    echo "${cwd}/slurm-wrapper.py $1 \$@" >> ./bin/$1
+    echo "${cwd}/slurm-wrapper.py $1 \"\$@\"" >> ./bin/$1
     chmod +x ./bin/$1
 }
 
