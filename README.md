@@ -26,8 +26,8 @@ planned.
 
 This extension contributes the following settings:
 
--   `slurm-dashboard.job-dashboard.showJobInfo`: Show all job metadata in the job
-    list. Default: `false`
+-   `slurm-dashboard.job-dashboard.showJobInfo`: Show all job metadata in the
+    job list. Default: `false`
 -   `slurm-dashboard.job-dashboard.promptBeforeCancel`: Prompt user before
     canceling a job. Default: `true`
 -   `slurm-dashboard.job-dashboard.promptBeforeCancelAll`: Prompt user before
@@ -35,30 +35,36 @@ This extension contributes the following settings:
 -   `slurm-dashboard.job-dashboard.refreshInterval`: How many seconds between
     refreshes of the job queue view. Set to `null` to turn off auto-refresh.
     Default: `300`
--   `slurm-dashboard.job-dashboard.extrapolationInterval`: Extrapolate the job run
-    times in the UI without querying the workload manager. Allows you to set a
-    high job-dashboard.refreshInterval, but still see more realistic job run
+-   `slurm-dashboard.job-dashboard.extrapolationInterval`: Extrapolate the job
+    run times in the UI without querying the workload manager. Allows you to set
+    a high job-dashboard.refreshInterval, but still see more realistic job run
     times. This has the danger of coming out of sync with the real times or not
     portraying job completion/failure, so it is turned off by default. Provide a
-    number to specify the interval in seconds or `null` to disable extrapolation.
-    Default: `null`
+    number to specify the interval in seconds or `null` to disable
+    extrapolation. Default: `null`
 -   `slurm-dashboard.job-dashboard.useNativeIcons`: Instead of the job status
-    icons shipped with the extension, use VSCode native codicons. Default: `false`
--   `slurm-dashboard.job-dashboard.sortBy`: Sort the job list by this column. Set
-    to `null` to leave the order returned by the workload manager. Choices: `id`,
-    `name`, `time left`, `status`. Default: `null`
+    icons shipped with the extension, use VSCode native codicons. Default:
+    `false`
+-   `slurm-dashboard.job-dashboard.sortBy`: Sort the job list by this column.
+    Set to `null` to leave the order returned by the workload manager. Choices:
+    `id`, `name`, `time left`, `status`. Default: `null`
 -   `slurm-dashboard.submit-dashboard.jobScriptExtensions`: File extensions used
     to identify job scripts. Default: `[".sbatch", ".slurm", ".job"]`
 -   `slurm-dashboard.submit-dashboard.promptBeforeSubmitAll`: Prompt user before
     submitting all job scripts. Default: `true`
 -   `slurm-dashboard.submit-dashboard.sortBy`: Sort the job script list by this
-    column. Set to `null` to leave the order the glob pattern discovered the files.
-    Choices: `filename`, `rel path`, `last modified`, `newest`, `oldest`. Default:
-    `last modified`
--   `slurm-dashboard.setJobWorkingDirectoryToScriptDirectory`: Launch job scripts
-    with the working directory as the location of the job script. Default: `true`
+    column. Set to `null` to leave the order the glob pattern discovered the
+    files. Choices: `filename`, `rel path`, `last modified`, `newest`, `oldest`.
+    Default: `last modified`
+-   `slurm-dashboard.setJobWorkingDirectoryToScriptDirectory`: Launch job
+    scripts with the working directory as the location of the job script.
+    Default: `true`
 -   `slurm-dashboard.backend`: Scheduler backend. Choices: `slurm`, `debug`.
     Default: `slurm`
+-   `slurm-dashboard.slurm-backend.squeueUserArg`: By default `--me` is passed
+    to squeue to get the users jobs. Slurm versions older than 20.02 do not
+    support `--me`. This settings provides a way to fallback to the `--user`
+    flag instead. Choices: `me`, `user`. Default: `me`
 
 Most notable is the `job-dashboard.refreshInterval` setting. The job queue view
 refreshes its data at regular intervals. To avoid overloading the login nodes or

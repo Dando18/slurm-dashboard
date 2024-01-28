@@ -205,6 +205,11 @@
           "default": null,
           "description": "Sort the job list by this column. Set to null to leave the order returned by the workload manager. Choices: [\"id\", \"name\", \"time left\", \"status\"] Default: null"
         },
+        "slurm-dashboard.slurm-backend.squeueUserArg": {
+          "type": "string",
+          "default": "me",
+          "description": "The argument to pass to squeue to filter jobs by user. By default the `--me` flag is passed to squeue, but Slurm versions older than 20.02 don't support this flag. 'user' will fall back to the `--user` flag, which is supported by older versions of Slurm. Choices: [\"me\", \"user\"] Default: me"
+        },
         "slurm-dashboard.submit-dashboard.jobScriptExtensions": {
           "type": "array",
           "default": [
