@@ -153,19 +153,65 @@ export class JobItem extends vscode.TreeItem {
     }
 }
 
+export class JobArrayItem extends vscode.TreeItem {
+
+    constructor(
+        public job: Job,
+        public children: JobItem[],
+        public readonly contextValue: string = 'jobItem'
+    ) {
+        super(job.name, vscode.TreeItemCollapsibleState.Collapsed);
+        this.iconPath = this.getIconPath();
+        this.tooltip = `${job.id} (${job.status})`;
+    }
+
+    public getIconPath(): string | vscode.Uri | vscode.ThemeIcon | undefined {
+        const useCustom = !vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('job-dashboard.useNativeIcons', false);
+        if (this.job.status === 'RUNNING') {
+            if (this.job.isPercentFinished(0.9)) {
+                return useCustom
+                    ? path.join(__filename, '..', '..', 'images', 'running-orange.svg')
+                    : new vscode.ThemeIcon('play');
+            } else {
+                return useCustom
+                    ? path.join(__filename, '..', '..', 'images', 'running.svg')
+                    : new vscode.ThemeIcon('play');
+            }
+        } else if (this.job.status === 'PENDING') {
+            return useCustom
+                ? path.join(__filename, '..', '..', 'images', 'pending.svg')
+                : new vscode.ThemeIcon('ellipsis');
+        } else if (this.job.status === 'COMPLETED' || this.job.status === 'COMPLETING') {
+            return useCustom
+                ? path.join(__filename, '..', '..', 'images', 'completed.svg')
+                : new vscode.ThemeIcon('check');
+        } else if (this.job.status === 'CANCELLED' || this.job.status === 'FAILED') {
+            return useCustom ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon('error');
+        } else if (this.job.status === 'TIMEOUT') {
+            return useCustom
+                ? path.join(__filename, '..', '..', 'images', 'error.svg')
+                : new vscode.ThemeIcon('warning');
+        } else {
+            return undefined;
+        }
+    }
+}
+
 /**
  * Provides a tree data provider for displaying job items in the job dashboard.
  * This class uses a Scheduler implementation to retrieve queue data and
  * interact with the system.
  */
-export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoItem> {
+export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoItem | JobArrayItem> {
     private jobItems: JobItem[] = [];
     private autoRefreshTimer: NodeJS.Timeout | null = null;
     private extrapolationTimer: NodeJS.Timeout | null = null;
 
-    private _onDidChangeTreeData: vscode.EventEmitter<JobItem | InfoItem | undefined | null | void> =
-        new vscode.EventEmitter<JobItem | InfoItem | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<JobItem | InfoItem | undefined | null | void> =
+    private _onDidChangeTreeData: vscode.EventEmitter<JobItem | InfoItem | JobArrayItem | undefined | null | void> =
+        new vscode.EventEmitter<JobItem | InfoItem | JobArrayItem | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<JobItem | InfoItem | JobArrayItem | undefined | null | void> =
         this._onDidChangeTreeData.event;
 
     /**
@@ -179,7 +225,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
      * @param element The job item or info item.
      * @returns The tree item or a promise that resolves to a tree item.
      */
-    getTreeItem(element: JobItem | InfoItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: JobItem | InfoItem | JobArrayItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
 
@@ -194,7 +240,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
      * @param element The job item or info item.
      * @returns The child job items or info items, or a promise that resolves to them.
      */
-    getChildren(element?: JobItem | InfoItem): vscode.ProviderResult<JobItem[] | InfoItem[]> {
+    getChildren(element?: JobItem | InfoItem | JobArrayItem): vscode.ProviderResult<JobItem[] | InfoItem[] | JobArrayItem[]> {
         if (element) {
             if (element instanceof JobItem) {
                 return Promise.resolve(element.getChildren(this.jobItems));
