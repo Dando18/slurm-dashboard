@@ -1,5 +1,11 @@
 # Change Log
 
+### 0.0.10
+
+-   added option `slurm-dashboard.slurm-backend.squeueUserArg` to enable passing
+    `--user=$USER` instead of `--me` to squeue for versions of Slurm older than
+    20.02
+
 ### 0.0.9
 
 -   bug fix: handle unlimited wall time for jobs
