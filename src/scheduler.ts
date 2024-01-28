@@ -259,15 +259,13 @@ export class SlurmScheduler implements Scheduler {
             .getConfiguration('slurm-dashboard')
             .get('slurm-backend.squeueUserArg', 'me');
 
-        if (setting !== 'me' && setting !== 'user') {
-            vscode.window.showErrorMessage(`Invalid value for slurm-backend.squeueUserArg: ${setting}`);
-            return '--me';
-        }
-
         if (setting === 'me') {
             return '--me';
-        } else {
+        } else if (setting === 'user') {
             return `--user=${process.env.USER}`;
+        } else {
+            vscode.window.showErrorMessage(`Invalid value for slurm-backend.squeueUserArg: ${setting}`);
+            return '--me';
         }
     }
 
