@@ -250,13 +250,33 @@ export class SlurmScheduler implements Scheduler {
         }
     }
 
+    /*
+     * Returns the CL argument to filter jobs by the current user. Defaults to
+     * --me, but older versions of Slurm use --user=$USER.
+     */
+    private getUserFilterArgForSqueue(): string {
+        const setting: string = vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('slurm-backend.squeueUserArg', 'me');
+
+        if (setting === 'me') {
+            return '--me';
+        } else if (setting === 'user') {
+            return `--user=${process.env.USER}`;
+        } else {
+            vscode.window.showErrorMessage(`Invalid value for slurm-backend.squeueUserArg: ${setting}`);
+            return '--me';
+        }
+    }
+
     /**
      * Retrieves the output of the queue command.
      * @returns A promise that resolves to the output string or undefined if there was an error.
      */
     private getQueueOutput(): Thenable<string | undefined> {
         const columnsString = this.columns.join(',');
-        const command = `squeue --me --noheader -O ${columnsString}`;
+        const userFilterArg = this.getUserFilterArgForSqueue();
+        const command = `squeue ${userFilterArg} --noheader -O ${columnsString}`;
 
         return new Promise((resolve, reject) => {
             exec(command, (error, stdout, stderr) => {
