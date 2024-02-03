@@ -1,5 +1,10 @@
 # Change Log
 
+### 0.0.11
+
+-   lowered minimum required vscode version to 1.81.1 and added testing for more
+    vscode releases
+
 ### 0.0.10
 
 -   added option `slurm-dashboard.slurm-backend.squeueUserArg` to enable passing
