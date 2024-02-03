@@ -93,11 +93,10 @@ Issues can be submitted under the [issues tab on GitHub](https://github.com/Dand
 
 See the [Changelog](/CHANGELOG.md) for the entire change history.
 
-### 0.0.10
+### 0.0.11
 
--   added option `slurm-dashboard.slurm-backend.squeueUserArg` to enable passing
-    `--user=$USER` instead of `--me` to squeue for versions of Slurm older than
-    20.02
+-   lowered minimum required vscode version to 1.81.1 and added testing for more
+    vscode releases
 
 # License
 
