@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { runTests } from '@vscode/test-electron';
+import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron';
 
 async function main() {
     try {
@@ -19,8 +19,19 @@ async function main() {
         let updatedEnv = process.env;
         updatedEnv.PATH = `${updatedEnv.PATH}:${path.resolve(__dirname, '../../src/test/bin')}`;
 
+        // parse out CLI to get vscode version
+        const args = process.argv.slice(2);
+        if (args.length === 0) {
+            throw new Error('No vscode version provided');
+        }
+        const vscodeVersion = args[0];
+
+        // Download and unzip VS Code
+        const vscodeExecutablePath = await downloadAndUnzipVSCode(vscodeVersion);
+
         // Download VS Code, unzip it and run the integration test
         await runTests({
+            vscodeExecutablePath,
             extensionDevelopmentPath,
             extensionTestsPath,
             launchArgs: [testWorkspace, '--disable-extensions'],
