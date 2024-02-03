@@ -154,7 +154,6 @@ export class JobItem extends vscode.TreeItem {
 }
 
 export class JobArrayItem extends vscode.TreeItem {
-
     constructor(
         public job: Job,
         public children: JobItem[],
@@ -240,7 +239,9 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
      * @param element The job item or info item.
      * @returns The child job items or info items, or a promise that resolves to them.
      */
-    getChildren(element?: JobItem | InfoItem | JobArrayItem): vscode.ProviderResult<JobItem[] | InfoItem[] | JobArrayItem[]> {
+    getChildren(
+        element?: JobItem | InfoItem | JobArrayItem
+    ): vscode.ProviderResult<JobItem[] | InfoItem[] | JobArrayItem[]> {
         if (element) {
             if (element instanceof JobItem) {
                 return Promise.resolve(element.getChildren(this.jobItems));
