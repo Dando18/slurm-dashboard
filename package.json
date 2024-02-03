@@ -254,7 +254,7 @@
     "format": "prettier --write \"src/**/*.{ts,json}\" \"./**/*.{md,json,yaml,yml}\"",
     "check-format": "prettier --check \"src/**/*.{ts,json}\" \"./**/*.{md,json,yaml,yml}\"",
     "test": "node ./out/test/runTest.js",
-    "coverage": "c8 --clean npm run test",
+    "coverage": "c8 --clean npm run test -- stable",
     "package": "vsce package",
     "deploy": "vsce publish"
   },
