@@ -259,7 +259,7 @@
     "deploy": "vsce publish"
   },
   "devDependencies": {
-    "@types/vscode": "^1.81.1",
+    "@types/vscode": "^1.86.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "20.11.10",
