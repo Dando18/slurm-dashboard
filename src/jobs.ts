@@ -40,7 +40,9 @@ export class JobItem extends vscode.TreeItem {
         private readonly showInfo: boolean = false,
         public readonly contextValue: string = 'jobItem'
     ) {
-        super(job.name, showInfo ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
+        const hasChildren: boolean = job.isJobArrayRoot() || showInfo;
+
+        super(job.name, hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
         this.description = job.curTime && job.maxTime ? `${job.curTime} / ${job.maxTime}` : '';
         this.iconPath = this.getIconPath();
         this.tooltip = `${job.id} (${job.status})`;
@@ -82,6 +84,19 @@ export class JobItem extends vscode.TreeItem {
                 : new vscode.ThemeIcon('warning');
         } else {
             return undefined;
+        }
+    }
+
+    /**
+     * If this is an array root job, then return the other array jobs as children.
+     * Otherwise, return the info items for the job.
+     */
+    public getChildren(jobItems: JobItem[]): InfoItem[] | JobItem[] {
+        if (this.job.isJobArrayRoot()) {
+            const rootId = this.job.id;
+            return jobItems.filter(jobItem => jobItem.job.arrayId === rootId && jobItem.job.id !== rootId);
+        } else {
+            return this.getInfoItems();
         }
     }
 
@@ -138,19 +153,64 @@ export class JobItem extends vscode.TreeItem {
     }
 }
 
+export class JobArrayItem extends vscode.TreeItem {
+    constructor(
+        public job: Job,
+        public children: JobItem[],
+        public readonly contextValue: string = 'jobItem'
+    ) {
+        super(job.name, vscode.TreeItemCollapsibleState.Collapsed);
+        this.iconPath = this.getIconPath();
+        this.tooltip = `${job.id} (${job.status})`;
+    }
+
+    public getIconPath(): string | vscode.Uri | vscode.ThemeIcon | undefined {
+        const useCustom = !vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('job-dashboard.useNativeIcons', false);
+        if (this.job.status === 'RUNNING') {
+            if (this.job.isPercentFinished(0.9)) {
+                return useCustom
+                    ? path.join(__filename, '..', '..', 'images', 'running-orange.svg')
+                    : new vscode.ThemeIcon('play');
+            } else {
+                return useCustom
+                    ? path.join(__filename, '..', '..', 'images', 'running.svg')
+                    : new vscode.ThemeIcon('play');
+            }
+        } else if (this.job.status === 'PENDING') {
+            return useCustom
+                ? path.join(__filename, '..', '..', 'images', 'pending.svg')
+                : new vscode.ThemeIcon('ellipsis');
+        } else if (this.job.status === 'COMPLETED' || this.job.status === 'COMPLETING') {
+            return useCustom
+                ? path.join(__filename, '..', '..', 'images', 'completed.svg')
+                : new vscode.ThemeIcon('check');
+        } else if (this.job.status === 'CANCELLED' || this.job.status === 'FAILED') {
+            return useCustom ? path.join(__filename, '..', '..', 'images', 'error.svg') : new vscode.ThemeIcon('error');
+        } else if (this.job.status === 'TIMEOUT') {
+            return useCustom
+                ? path.join(__filename, '..', '..', 'images', 'error.svg')
+                : new vscode.ThemeIcon('warning');
+        } else {
+            return undefined;
+        }
+    }
+}
+
 /**
  * Provides a tree data provider for displaying job items in the job dashboard.
  * This class uses a Scheduler implementation to retrieve queue data and
  * interact with the system.
  */
-export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoItem> {
+export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoItem | JobArrayItem> {
     private jobItems: JobItem[] = [];
     private autoRefreshTimer: NodeJS.Timeout | null = null;
     private extrapolationTimer: NodeJS.Timeout | null = null;
 
-    private _onDidChangeTreeData: vscode.EventEmitter<JobItem | InfoItem | undefined | null | void> =
-        new vscode.EventEmitter<JobItem | InfoItem | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<JobItem | InfoItem | undefined | null | void> =
+    private _onDidChangeTreeData: vscode.EventEmitter<JobItem | InfoItem | JobArrayItem | undefined | null | void> =
+        new vscode.EventEmitter<JobItem | InfoItem | JobArrayItem | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<JobItem | InfoItem | JobArrayItem | undefined | null | void> =
         this._onDidChangeTreeData.event;
 
     /**
@@ -164,7 +224,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
      * @param element The job item or info item.
      * @returns The tree item or a promise that resolves to a tree item.
      */
-    getTreeItem(element: JobItem | InfoItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: JobItem | InfoItem | JobArrayItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
 
@@ -179,10 +239,12 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
      * @param element The job item or info item.
      * @returns The child job items or info items, or a promise that resolves to them.
      */
-    getChildren(element?: JobItem | InfoItem): vscode.ProviderResult<JobItem[] | InfoItem[]> {
+    getChildren(
+        element?: JobItem | InfoItem | JobArrayItem
+    ): vscode.ProviderResult<JobItem[] | InfoItem[] | JobArrayItem[]> {
         if (element) {
             if (element instanceof JobItem) {
-                return Promise.resolve(element.getInfoItems());
+                return Promise.resolve(element.getChildren(this.jobItems));
             } else {
                 return Promise.resolve([]);
             }
@@ -196,10 +258,11 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
                     .get('job-dashboard.sortBy');
                 sortJobs(jobs, sortKey);
 
-                const items = jobs.map(job => new JobItem(job, showInfo));
+                const allItems = jobs.map(job => new JobItem(job, showInfo));
+                const rootItems = allItems.filter(jobItem => !jobItem.job.isInJobArray || jobItem.job.isJobArrayRoot());
                 this.startExtrapolatingJobTimes();
-                this.jobItems = items;
-                return items;
+                this.jobItems = allItems;
+                return rootItems;
             });
         }
     }
@@ -411,7 +474,10 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
             .getConfiguration('slurm-dashboard')
             .get('job-dashboard.promptBeforeCancelAll', true);
         let cancelAllFunc = () => {
-            this.jobItems.forEach(jobItem => this.scheduler.cancelJob(jobItem.job));
+            const rootItems = this.jobItems.filter(
+                jobItem => jobItem.job.isJobArrayRoot() || !jobItem.job.isInJobArray
+            );
+            rootItems.forEach(jobItem => this.scheduler.cancelJob(jobItem.job));
             setTimeout(() => this.refresh(), 500);
         };
 
