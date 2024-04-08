@@ -54,19 +54,19 @@ export function sortJobsScripts(scripts: JobScript[], key: string | null | undef
         } else if (key === 'last modified') {
             if (a.stat && b.stat) {
                 return b.stat.mtime - a.stat.mtime;
+                 /* c8 ignore next 3 */
             } else {
-                /* c8 ignore next 2 */
                 return 0;
             }
         } else if (key === 'newest' || key === 'oldest') {
             if (a.stat && b.stat) {
                 return key === 'newest' ? b.stat.ctime - a.stat.ctime : a.stat.ctime - b.stat.ctime;
+                /* c8 ignore next 3 */
             } else {
-                /* c8 ignore next 2 */
                 return 0;
             }
+            /* c8 ignore next 3 */
         } else {
-            /* c8 ignore next 2 */
             return 0;
         }
     });
