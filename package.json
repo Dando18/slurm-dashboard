@@ -269,7 +269,7 @@
     "prettier": "^3.2.5",
     "eslint": "^8.57.0",
     "glob": "^8.1.0",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "typescript": "^5.4.3",
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.24.0"
