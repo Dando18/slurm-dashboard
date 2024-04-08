@@ -54,7 +54,7 @@ export function sortJobsScripts(scripts: JobScript[], key: string | null | undef
         } else if (key === 'last modified') {
             if (a.stat && b.stat) {
                 return b.stat.mtime - a.stat.mtime;
-                 /* c8 ignore next 3 */
+                /* c8 ignore next 3 */
             } else {
                 return 0;
             }
