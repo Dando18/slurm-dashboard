@@ -119,6 +119,37 @@ suite('scheduler.ts tests', () => {
         }
     });
 
+    test('Job :: isFinished', () => {
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'RUNNING');
+            assert.strictEqual(job.isFinished(), false);
+        }
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'PENDING');
+            assert.strictEqual(job.isFinished(), false);
+        }
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'COMPLETED');
+            assert.strictEqual(job.isFinished(), true);
+        }
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'FAILED');
+            assert.strictEqual(job.isFinished(), true);
+        }
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'CANCELLED');
+            assert.strictEqual(job.isFinished(), true);
+        }
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'TIMEOUT');
+            assert.strictEqual(job.isFinished(), true);
+        }
+        {
+            const job = new scheduler.Job('1', 'Test Job', 'INVALID');
+            assert.strictEqual(job.isFinished(), false);
+        }
+    });
+
     test('sortJobs', () => {
         const jobsRef = [
             new scheduler.Job(

@@ -182,26 +182,43 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
     getChildren(element?: JobItem | InfoItem): vscode.ProviderResult<JobItem[] | InfoItem[]> {
         if (element) {
             if (element instanceof JobItem) {
+                /* job items can have info items beneath them */
                 return Promise.resolve(element.getInfoItems());
             } else {
+                /* info items have no children */
                 return Promise.resolve([]);
             }
         } else {
-            const showInfo = vscode.workspace
-                .getConfiguration('slurm-dashboard')
-                .get('job-dashboard.showJobInfo', false);
-            return this.scheduler.getQueue().then(jobs => {
-                const sortKey: string | null | undefined = vscode.workspace
-                    .getConfiguration('slurm-dashboard')
-                    .get('job-dashboard.sortBy');
-                sortJobs(jobs, sortKey);
-
-                const items = jobs.map(job => new JobItem(job, showInfo));
-                this.startExtrapolatingJobTimes();
-                this.jobItems = items;
-                return items;
-            });
+            return this.getJobItems();
         }
+    }
+
+    /**
+     * Retrieves the job items from the scheduler and returns a promise that resolves to an array of JobItem objects.
+     *
+     * @returns A promise that resolves to an array of JobItem objects.
+     */
+    private getJobItems(): Thenable<JobItem[]> {
+        const config = vscode.workspace.getConfiguration('slurm-dashboard');
+        const showInfo: boolean = config.get('job-dashboard.showJobInfo', false);
+        const sortKey: string | null | undefined = config.get('job-dashboard.sortBy');
+        const shouldPersist: boolean = config.get('job-dashboard.persistJobs', false);
+
+        return this.scheduler.getQueue().then(jobs => {
+            sortJobs(jobs, sortKey);
+
+            if (shouldPersist) {
+                // only add jobs to the list if they are not already there
+                const newJobs = jobs.filter(job => !this.jobItems.some(item => item.job.id === job.id));
+                const newJobItems = newJobs.map(job => new JobItem(job, showInfo));
+                this.jobItems = this.jobItems.concat(newJobItems);
+            } else {
+                // replace all jobs with the new ones
+                this.jobItems = jobs.map(job => new JobItem(job, showInfo));
+            }
+            this.startExtrapolatingJobTimes();
+            return this.jobItems;
+        });
     }
 
     /**
@@ -232,8 +249,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
     /**
      * Refreshes the job dashboard. Updates all tree elements.
      */
-    public refresh(): void {
-        this.jobItems = [];
+    public async refresh(): Promise<void> {
         this._onDidChangeTreeData.fire();
     }
 
@@ -331,16 +347,25 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
 
     /**
      * Cancels a job using the scheduler object. If slurm-dashboard.job-dashboard.promptBeforeCancel
-     * is true, then a confirmation dialog is shown before canceling the job.
+     * is true, then a confirmation dialog is shown before canceling the job. If the job is finished
+     * and slurm-dashboard.job-dashboard.persistJobs is false, then the job is removed from the list.
      * @param jobItem The job item.
      * @returns A promise that resolves to `true` if the job was canceled, or `false` otherwise.
      */
     private cancel(jobItem: JobItem): Thenable<boolean> {
-        const shouldPrompt = vscode.workspace
-            .getConfiguration('slurm-dashboard')
-            .get('job-dashboard.promptBeforeCancel', true);
+        const config = vscode.workspace.getConfiguration('slurm-dashboard');
+        const shouldPrompt = config.get('job-dashboard.promptBeforeCancel', true);
+        const shouldPersist: boolean = config.get('job-dashboard.persistJobs', false);
+
         let cancelFunc = () => {
-            this.scheduler.cancelJob(jobItem.job);
+            if (!jobItem.job.isFinished()) {
+                this.scheduler.cancelJob(jobItem.job);
+            }
+            if (shouldPersist) {
+                // if persisting then cancel should remove it from the job items list
+                // to prevent it from being re-added on the next refresh
+                this.jobItems = this.jobItems.filter(item => item.job.id !== jobItem.job.id);
+            }
             setTimeout(() => this.refresh(), 500);
         };
 
@@ -373,11 +398,19 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
             return Promise.resolve(false);
         }
 
-        const shouldPrompt = vscode.workspace
-            .getConfiguration('slurm-dashboard')
-            .get('job-dashboard.promptBeforeCancel', true);
+        const config = vscode.workspace.getConfiguration('slurm-dashboard');
+        const shouldPrompt: boolean = config.get('job-dashboard.promptBeforeCancel', true);
+        const shouldPersist: boolean = config.get('job-dashboard.persistJobs', false);
+
         let cancelAndResubmitFunc = () => {
-            this.scheduler.cancelJob(jobItem.job);
+            if (!jobItem.job.isFinished()) {
+                this.scheduler.cancelJob(jobItem.job);
+            }
+            if (shouldPersist) {
+                // if persisting then cancel should remove it from the job items list
+                // to prevent it from being re-added on the next refresh
+                this.jobItems = this.jobItems.filter(item => item.job.id !== jobItem.job.id);
+            }
             this.scheduler.submitJob(jobItem.job.batchFile!);
             setTimeout(() => this.refresh(), 500);
         };
