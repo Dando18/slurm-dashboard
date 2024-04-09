@@ -217,6 +217,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
                         // job was previously in the list but is no longer
                         // add it back and set its status to COMPLETED
                         // TODO -- maybe ping the scheduler to get the actual completion status
+                        oldJob.status = 'COMPLETED';
                         this.jobItems.push(new JobItem(oldJob, showInfo));
                     }
                 });
@@ -378,7 +379,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
         };
 
         if (shouldPrompt) {
-            const cancelWord = (jobItem.job.isFinished() && shouldPersist) ? 'remove' : 'cancel';
+            const cancelWord = jobItem.job.isFinished() && shouldPersist ? 'remove' : 'cancel';
             return vscode.window
                 .showInformationMessage(`Are you sure you want to ${cancelWord} job ${jobItem.job.id}?`, 'Yes', 'No')
                 .then(selection => {
@@ -425,7 +426,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
         };
 
         if (shouldPrompt) {
-            const cancelWord = (jobItem.job.isFinished() && shouldPersist) ? 'remove' : 'cancel';
+            const cancelWord = jobItem.job.isFinished() && shouldPersist ? 'remove' : 'cancel';
             return vscode.window
                 .showInformationMessage(
                     `Are you sure you want to ${cancelWord} job ${jobItem.job.id} and resubmit?`,
