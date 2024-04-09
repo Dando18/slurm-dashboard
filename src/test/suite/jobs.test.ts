@@ -259,6 +259,43 @@ suite('jobs.ts tests', () => {
     });
 
     test('JobQueueProvider :: getChildren', async () => {
+        await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.persistJobs', false);
+        {
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.showJobInfo', false);
+            const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
+            const children = await jobQueueProvider.getChildren();
+            assert.ok(children);
+            assert.strictEqual(children.length, 9);
+            assert.strictEqual(children[0].label, 'job1');
+            assert.strictEqual(children[1].label, 'job2');
+            assert.strictEqual(children[2].label, 'job3');
+            assert.strictEqual(children[3].label, 'job4');
+            assert.strictEqual(children[4].label, 'job5');
+            assert.strictEqual(children[5].label, 'job6');
+            assert.strictEqual(children[6].label, 'job7');
+            assert.strictEqual(children[7].label, 'job8');
+            assert.strictEqual(children[8].label, 'job9');
+        }
+        {
+            await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.showJobInfo', true);
+            const jobQueueProvider = new jobs.JobQueueProvider(new Debug());
+            const children = await jobQueueProvider.getChildren();
+            assert.ok(children);
+            assert.strictEqual(children.length, 9);
+
+            const job1Items = await jobQueueProvider.getChildren(children[0]);
+            assert.ok(job1Items);
+            assert.strictEqual(job1Items.length, 7);
+            job1Items.forEach(item => {
+                assert.ok(item instanceof jobs.InfoItem);
+            });
+
+            const emptyItem = await jobQueueProvider.getChildren(job1Items[0]);
+            assert.ok(emptyItem);
+            assert.strictEqual(emptyItem.length, 0);
+        }
+
+        await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.persistJobs', true);
         {
             await vscode.workspace.getConfiguration('slurm-dashboard').update('job-dashboard.showJobInfo', false);
             const jobQueueProvider = new jobs.JobQueueProvider(new Debug());

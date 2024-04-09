@@ -42,6 +42,8 @@ This extension contributes the following settings:
     portraying job completion/failure, so it is turned off by default. Provide a
     number to specify the interval in seconds or `null` to disable
     extrapolation. Default: `null`
+-   `slurm-dashboard.job-dashboard.persistJobs`: Keep completed jobs in the job
+    dashboard until they are removed with the X button. Default: `false`
 -   `slurm-dashboard.job-dashboard.useNativeIcons`: Instead of the job status
     icons shipped with the extension, use VSCode native codicons. Default:
     `false`

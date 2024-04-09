@@ -54,6 +54,20 @@ export class Job {
             return undefined;
         }
     }
+
+    /**
+     * Checks if the scheduler is finished (i.e. no longer running or pending).
+     * The scheduler is considered finished if its status is 'COMPLETED', 'FAILED', 'TIMEOUT', or 'CANCELLED'.
+     * @returns A boolean indicating whether the scheduler is finished.
+     */
+    public isFinished(): boolean {
+        return (
+            this.status === 'COMPLETED' ||
+            this.status === 'FAILED' ||
+            this.status === 'TIMEOUT' ||
+            this.status === 'CANCELLED'
+        );
+    }
 }
 
 /**
