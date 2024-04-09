@@ -208,10 +208,18 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
             sortJobs(jobs, sortKey);
 
             if (shouldPersist) {
-                // only add jobs to the list if they are not already there
-                const newJobs = jobs.filter(job => !this.jobItems.some(item => item.job.id === job.id));
-                const newJobItems = newJobs.map(job => new JobItem(job, showInfo));
-                this.jobItems = this.jobItems.concat(newJobItems);
+                const oldJobs = this.jobItems.map(item => item.job);
+                this.jobItems = jobs.map(job => new JobItem(job, showInfo));
+
+                // add back in any jobs that were removed
+                oldJobs.forEach(oldJob => {
+                    if (!jobs.find(job => job.id === oldJob.id)) {
+                        // job was previously in the list but is no longer
+                        // add it back and set its status to COMPLETED
+                        // TODO -- maybe ping the scheduler to get the actual completion status
+                        this.jobItems.push(new JobItem(oldJob, showInfo));
+                    }
+                });
             } else {
                 // replace all jobs with the new ones
                 this.jobItems = jobs.map(job => new JobItem(job, showInfo));
@@ -370,8 +378,9 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
         };
 
         if (shouldPrompt) {
+            const cancelWord = (jobItem.job.isFinished() && shouldPersist) ? 'remove' : 'cancel';
             return vscode.window
-                .showInformationMessage(`Are you sure you want to cancel job ${jobItem.job.id}?`, 'Yes', 'No')
+                .showInformationMessage(`Are you sure you want to ${cancelWord} job ${jobItem.job.id}?`, 'Yes', 'No')
                 .then(selection => {
                     if (selection === 'Yes') {
                         cancelFunc();
@@ -416,9 +425,10 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
         };
 
         if (shouldPrompt) {
+            const cancelWord = (jobItem.job.isFinished() && shouldPersist) ? 'remove' : 'cancel';
             return vscode.window
                 .showInformationMessage(
-                    `Are you sure you want to cancel job ${jobItem.job.id} and resubmit?`,
+                    `Are you sure you want to ${cancelWord} job ${jobItem.job.id} and resubmit?`,
                     'Yes',
                     'No'
                 )
