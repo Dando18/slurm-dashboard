@@ -95,10 +95,10 @@ Issues can be submitted under the [issues tab on GitHub](https://github.com/Dand
 
 See the [Changelog](/CHANGELOG.md) for the entire change history.
 
-### 0.0.11
+### 0.0.12
 
--   lowered minimum required vscode version to 1.81.1 and added testing for more
-    vscode releases
+-   adds ability to persist jobs in the job view so that they stay until
+    deleted. See the `slurm-dashboard.job-dashboard.persistJobs` setting.
 
 # License
 
