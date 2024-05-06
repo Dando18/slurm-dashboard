@@ -2,8 +2,8 @@
 
 ### 0.0.12
 
--   adds ability to persist jobs in the job view so that they stay until 
-    deleted. See the `slurm-dashboard.job-dashboard.persistJobs` setting. 
+-   adds ability to persist jobs in the job view so that they stay until
+    deleted. See the `slurm-dashboard.job-dashboard.persistJobs` setting.
 
 ### 0.0.11
 
