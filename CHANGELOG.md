@@ -1,5 +1,13 @@
 # Change Log
 
+### 0.0.13
+
+-   use glob patterns to find job scripts instead of extensions. The glob patterns
+    can be specified with `slurm-dashboard.submit-dashboard.jobScriptPatterns`.
+    The old setting, `slurm-dashboard.submit-dashboard.jobScriptExtensions`, is
+    now deprecated and will be removed in a future version.
+-   collect node list data and display it in the job info display
+
 ### 0.0.12
 
 -   adds ability to persist jobs in the job view so that they stay until

@@ -51,8 +51,8 @@ This extension contributes the following settings:
     Set to `null` to leave the order returned by the workload manager. Choices:
     `id`, `name`, `time left`, `status`. Default: `null`
 -   [DEPRECATED] `slurm-dashboard.submit-dashboard.jobScriptExtensions`: Use
-    jobScriptPatterns setting. File extensions used to identify job scripts.
-    Default: `[".sbatch", ".slurm", ".job"]`
+    jobScriptPatterns setting instead. File extensions used to identify job
+    scripts. Default: `[".sbatch", ".slurm", ".job"]`
 -   `slurm-dashboard.submit-dashboard.jobScriptPatterns`: Glob patterns to
     identify job scripts. Default: `["**/*.slurm", "**/*.sbatch", "**/*.job"]`
 -   `slurm-dashboard.submit-dashboard.promptBeforeSubmitAll`: Prompt user before
@@ -92,16 +92,26 @@ like when enabled is shown below.
 
 ### Submitting Issues
 
-Issues can be submitted under the [issues tab on GitHub](https://github.com/Dando18/slurm-dashboard/issues).
+Issues can be submitted under the [issues tab on
+GitHub](https://github.com/Dando18/slurm-dashboard/issues).
 
 ## Release Notes
 
 See the [Changelog](/CHANGELOG.md) for the entire change history.
 
-### 0.0.12
+### 0.0.13
 
--   adds ability to persist jobs in the job view so that they stay until
-    deleted. See the `slurm-dashboard.job-dashboard.persistJobs` setting.
+-   use glob patterns to find job scripts instead of extensions. The glob patterns
+    can be specified with `slurm-dashboard.submit-dashboard.jobScriptPatterns`.
+    The old setting, `slurm-dashboard.submit-dashboard.jobScriptExtensions`, is
+    now deprecated and will be removed in a future version.
+-   collect node list data and display it in the job info display
+
+## Contributing
+
+This extension is completely [open
+source](https://github.com/Dando18/slurm-dashboard) and contributions are
+welcome.
 
 # License
 
