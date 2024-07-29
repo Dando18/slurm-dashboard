@@ -104,6 +104,9 @@ export class JobItem extends vscode.TreeItem {
         if (this.job.queue) {
             infoItems.push(new InfoItem('queue', this.job.queue));
         }
+        if (this.job.nodeList) {
+            infoItems.push(new InfoItem('nodes', this.job.nodeList));
+        }
         if (this.job.batchFile) {
             infoItems.push(new InfoItem('batch file', this.job.batchFile));
         }

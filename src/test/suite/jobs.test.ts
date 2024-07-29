@@ -34,6 +34,7 @@ suite('jobs.ts tests', () => {
                     'Test Job',
                     'PENDING',
                     'queue',
+                    '[]',
                     'batch',
                     'out',
                     new WallTime(0, 0, 30, 0),
@@ -60,7 +61,7 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(
                 /* prettier-ignore */
-                new Job('2','Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
+                new Job('2','Test Job', 'RUNNING', 'queue', '[node1]', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
@@ -109,7 +110,7 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(
                 /* prettier-ignore */
-                new Job('2', 'Test Job', 'RUNNING', 'queue', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
+                new Job('2', 'Test Job', 'RUNNING', 'queue', '[node1]', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('play'));
         }
@@ -163,6 +164,7 @@ suite('jobs.ts tests', () => {
                     'Test Job',
                     'PENDING',
                     'queue',
+                    '[]',
                     'batch',
                     'out',
                     new WallTime(0, 0, 30, 0),
@@ -171,7 +173,7 @@ suite('jobs.ts tests', () => {
                 true
             );
             const infoItems = jobItem.getInfoItems();
-            assert.strictEqual(infoItems.length, 7);
+            assert.strictEqual(infoItems.length, 8);
             assert.strictEqual(infoItems[0].label, 'id');
             assert.strictEqual(infoItems[0].value, '2');
             assert.strictEqual(infoItems[1].label, 'name');
@@ -180,12 +182,14 @@ suite('jobs.ts tests', () => {
             assert.strictEqual(infoItems[2].value, 'PENDING');
             assert.strictEqual(infoItems[3].label, 'queue');
             assert.strictEqual(infoItems[3].value, 'queue');
-            assert.strictEqual(infoItems[4].label, 'batch file');
-            assert.strictEqual(infoItems[4].value, 'batch');
-            assert.strictEqual(infoItems[5].label, 'max time');
-            assert.strictEqual(infoItems[5].value, '30:00');
-            assert.strictEqual(infoItems[6].label, 'cur time');
-            assert.strictEqual(infoItems[6].value, '15:30');
+            assert.strictEqual(infoItems[4].label, 'nodes');
+            assert.strictEqual(infoItems[4].value, '[]');
+            assert.strictEqual(infoItems[5].label, 'batch file');
+            assert.strictEqual(infoItems[5].value, 'batch');
+            assert.strictEqual(infoItems[6].label, 'max time');
+            assert.strictEqual(infoItems[6].value, '30:00');
+            assert.strictEqual(infoItems[7].label, 'cur time');
+            assert.strictEqual(infoItems[7].value, '15:30');
         }
     });
 
@@ -196,6 +200,7 @@ suite('jobs.ts tests', () => {
                 'Test Job',
                 'RUNNING',
                 'queue',
+                '[node1]',
                 'batch',
                 'out',
                 new WallTime(0, 0, 30, 0),
@@ -214,6 +219,7 @@ suite('jobs.ts tests', () => {
                 'Test Job',
                 'PENDING',
                 'queue',
+                '[]',
                 'batch',
                 'out',
                 new WallTime(0, 0, 30, 0),
@@ -232,6 +238,7 @@ suite('jobs.ts tests', () => {
                 'Test Job',
                 'RUNNING',
                 'queue',
+                '[node1]',
                 'batch',
                 'out',
                 new WallTime(0, 0, 30, 0),
@@ -285,7 +292,7 @@ suite('jobs.ts tests', () => {
 
             const job1Items = await jobQueueProvider.getChildren(children[0]);
             assert.ok(job1Items);
-            assert.strictEqual(job1Items.length, 7);
+            assert.strictEqual(job1Items.length, 8);
             job1Items.forEach(item => {
                 assert.ok(item instanceof jobs.InfoItem);
             });
@@ -321,7 +328,7 @@ suite('jobs.ts tests', () => {
 
             const job1Items = await jobQueueProvider.getChildren(children[0]);
             assert.ok(job1Items);
-            assert.strictEqual(job1Items.length, 7);
+            assert.strictEqual(job1Items.length, 8);
             job1Items.forEach(item => {
                 assert.ok(item instanceof jobs.InfoItem);
             });
