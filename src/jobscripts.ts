@@ -112,6 +112,30 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         }
     }
 
+    private getJobScriptFilePatterns(): string[] {
+        /* first check if slurm-dashboard.submit-dashboard.jobScriptExtensions
+           is not set to the default. If so, show a warning message, since
+           this is deprecated.
+        */
+        const jobScriptExts = vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('submit-dashboard.jobScriptExtensions', ['.slurm', '.sbatch', '.job']);
+        /* c8 ignore next 6 */
+        if (JSON.stringify(jobScriptExts) !== JSON.stringify(['.slurm', '.sbatch', '.job'])) {
+            vscode.window.showWarningMessage(
+                'The slurm-dashboard.submit-dashboard.jobScriptExtensions setting has been modified, but ' +
+                    'is deprecated. It will be removed in a future version. Please use the ' +
+                    'slurm-dashboard.submit-dashboard.jobScriptPatterns setting instead.'
+            );
+        }
+
+        /* grab the glob patterns from the jobScriptPatterns setting */
+        const jobScriptPatterns = vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .get('submit-dashboard.jobScriptPatterns', ['**/*.slurm', '**/*.sbatch', '**/*.job']);
+        return jobScriptPatterns;
+    }
+
     /**
      * Retrieves all job scripts in the workspace.
      * Searches for job scripts based on the extensions specified by
@@ -120,14 +144,12 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
      * @returns A promise that resolves to an array of job scripts.
      */
     private getAllJobScripts(): Promise<JobScript[]> {
-        const jobScriptExts = vscode.workspace
-            .getConfiguration('slurm-dashboard')
-            .get('submit-dashboard.jobScriptExtensions', ['.slurm', '.sbatch', '.job']);
+        const patterns = this.getJobScriptFilePatterns();
 
         /* find all files in workspace with job script extensions */
         let foundFiles: PromiseLike<JobScript[]>[] = [];
-        jobScriptExts.forEach(ext => {
-            let jobScripts = vscode.workspace.findFiles(`**/*${ext}`).then(uris => {
+        patterns.forEach(pattern => {
+            let jobScripts = vscode.workspace.findFiles(pattern).then(uris => {
                 let stats = uris.map(uri => vscode.workspace.fs.stat(uri));
                 return Promise.all(stats).then(stats => {
                     return uris.map((uri, i) => new JobScript(uri, stats[i]));

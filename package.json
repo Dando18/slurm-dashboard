@@ -222,7 +222,16 @@
             ".sbatch",
             ".job"
           ],
-          "description": "File extensions used to identify job scripts."
+          "description": "[DEPRECATED] Use jobScriptPatterns setting instead. File extensions used to identify job scripts."
+        },
+        "slurm-dashboard.submit-dashboard.jobScriptPatterns": {
+          "type": "array",
+          "default": [
+            "**/*.slurm",
+            "**/*.sbatch",
+            "**/*.job"
+          ],
+          "description": "Glob patterns to identify job scripts. Default: [\"**/*.slurm\", \"**/*.sbatch\", \"**/*.job\"]"
         },
         "slurm-dashboard.submit-dashboard.promptBeforeSubmitAll": {
           "type": "boolean",
