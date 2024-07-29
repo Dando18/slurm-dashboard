@@ -284,7 +284,7 @@
     "prettier": "^3.3.3",
     "eslint": "^8.57.0",
     "glob": "^8.1.0",
-    "minimatch": "^5.1.2",
+    "minimatch": "^10.0.1",
     "mocha": "^10.4.0",
     "typescript": "^5.4.5",
     "@vscode/test-electron": "^2.4.1",
