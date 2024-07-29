@@ -24,6 +24,7 @@ export class Job {
         public name: string,
         public status: string,
         public queue?: string,
+        public nodeList?: string,
         public batchFile?: string,
         public outputFile?: string,
         public maxTime?: WallTime,
@@ -189,6 +190,7 @@ export class SlurmScheduler implements Scheduler {
         new SchedulerDataColumn('JobID', 255),
         new SchedulerDataColumn('Name', 255),
         new SchedulerDataColumn('State', 255),
+        new SchedulerDataColumn('NodeList', 255),
         new SchedulerDataColumn('Partition', 255),
         new SchedulerDataColumn('QOS', 255),
         new SchedulerDataColumn('STDOUT', 255),
@@ -338,6 +340,7 @@ export class SlurmScheduler implements Scheduler {
                 results['Name'],
                 results['State'],
                 results['Partition'],
+                results['NodeList'],
                 results['Command'],
                 undefined /* let this be filled in by getJobOutputPath later */,
                 timeLimit,
@@ -405,15 +408,15 @@ export class Debug implements Scheduler {
      */
     // prettier-ignore
     private jobs: Job[] = [
-        new Job("1", "job1", "RUNNING", "debug", "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
-        new Job("2", "job2", "RUNNING", "debug", "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
-        new Job("3", "job3", "RUNNING", "debug", "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
-        new Job("4", "job4", "PENDING", "debug", "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
-        new Job("5", "job5", "PENDING", "debug", "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
-        new Job("6", "job6", "COMPLETED", "debug", "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
-        new Job("7", "job7", "TIMEOUT", "debug", "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
-        new Job("8", "job8", "CANCELLED", "debug", "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
-        new Job("9", "job9", "FAILED", "debug", "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
+        new Job("1", "job1", "RUNNING", "debug", '[node1]', "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
+        new Job("2", "job2", "RUNNING", "debug", '[node1]', "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
+        new Job("3", "job3", "RUNNING", "debug", '[node1]', "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
+        new Job("4", "job4", "PENDING", "debug", '[]', "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
+        new Job("5", "job5", "PENDING", "debug", '[]', "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
+        new Job("6", "job6", "COMPLETED", "debug", '[]', "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
+        new Job("7", "job7", "TIMEOUT", "debug", '[]', "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
+        new Job("8", "job8", "CANCELLED", "debug", '[]', "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
+        new Job("9", "job9", "FAILED", "debug", '[]', "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
     ];
 
     /**
