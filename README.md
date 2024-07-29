@@ -50,8 +50,11 @@ This extension contributes the following settings:
 -   `slurm-dashboard.job-dashboard.sortBy`: Sort the job list by this column.
     Set to `null` to leave the order returned by the workload manager. Choices:
     `id`, `name`, `time left`, `status`. Default: `null`
--   `slurm-dashboard.submit-dashboard.jobScriptExtensions`: File extensions used
-    to identify job scripts. Default: `[".sbatch", ".slurm", ".job"]`
+-   [DEPRECATED] `slurm-dashboard.submit-dashboard.jobScriptExtensions`: Use
+    jobScriptPatterns setting. File extensions used to identify job scripts.
+    Default: `[".sbatch", ".slurm", ".job"]`
+-   `slurm-dashboard.submit-dashboard.jobScriptPatterns`: Glob patterns to
+    identify job scripts. Default: `["**/*.slurm", "**/*.sbatch", "**/*.job"]`
 -   `slurm-dashboard.submit-dashboard.promptBeforeSubmitAll`: Prompt user before
     submitting all job scripts. Default: `true`
 -   `slurm-dashboard.submit-dashboard.sortBy`: Sort the job script list by this
