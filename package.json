@@ -276,7 +276,7 @@
     "@types/vscode": "^1.81.1",
     "@types/glob": "^8.1.0",
     "@types/minimatch": "^5.1.2",
-    "@types/mocha": "^10.0.1",
+    "@types/mocha": "^10.0.8",
     "@types/node": "22.6.1",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.00.0",
