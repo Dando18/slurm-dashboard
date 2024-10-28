@@ -112,6 +112,7 @@ See the [Changelog](/CHANGELOG.md) for the entire change history.
 This extension is completely [open
 source](https://github.com/Dando18/slurm-dashboard) and contributions are
 welcome.
+See the [contributing guidelines](CONTRIBUTING.md) for more info.
 
 # License
 
