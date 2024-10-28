@@ -40,5 +40,6 @@ to install an extension from a vsix file. Now you have your test version of the
 extension installed on the remote system.
 
 Note, if you already have slurm-dashboard installed, then you'll need to
-uninstall it and set `"extensions.autoUpdate": false` in your user settings to
-prevent VSCode from trying to grab a newer install from vscode marketplace.
+uninstall it first and set `"extensions.autoUpdate": false` in your user
+settings to prevent VSCode from trying to grab a newer install from vscode
+marketplace.
