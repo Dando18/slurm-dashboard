@@ -27,7 +27,7 @@ Other useful developing commands are listed below:
 You can directly run the extension locally using the Run and Debug UI in VSCode.
 Just select Run Extension and hit run. Unless you have slurm installed locally
 this won't be very useful. You can select "Debug" as the scheduling backend in
-the seconds if you just want to see temp data in the UI.
+the settings if you just want to see temp data in the UI.
 
 ### Testing on Remote System
 
