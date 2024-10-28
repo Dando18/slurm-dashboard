@@ -2,9 +2,9 @@
 
 This extension is completely [open
 source](https://github.com/Dando18/slurm-dashboard) and contributions are
-welcome. Here I've outline some helpful tips for how I develop locally.
+welcome. Here I've outline some helpful tips for how I develop and test.
 
-## Testing Changes Locally
+## Testing Changes
 
 ### Unit Tests
 
