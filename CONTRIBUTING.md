@@ -16,11 +16,11 @@ within the Run and Debug UI. All tests should pass.
 You can also look at code coverage in the testing with `npm run coverage`.
 Other useful developing commands are listed below:
 
--   `npm run test -- {vscode_version}` -- run unit tests on vscode version
--   `npm run coverage` -- collect code coverage data for unit tests
--   `npm run check-format` -- check if the code is in the correct format
--   `npm run format` -- format all files to the correct format
--   `npm run package` -- create a vsix package for distributing extension
+- `npm run test -- {vscode_version}` -- run unit tests on vscode version
+- `npm run coverage` -- collect code coverage data for unit tests
+- `npm run check-format` -- check if the code is in the correct format
+- `npm run format` -- format all files to the correct format
+- `npm run package` -- create a vsix package for distributing extension
 
 ### Testing Locally
 
