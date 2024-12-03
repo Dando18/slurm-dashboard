@@ -14,5 +14,8 @@
     "no-throw-literal": "warn",
     "semi": "off"
   },
+  "settings": {
+    "files": ["**/*.ts"]
+  },
   "ignorePatterns": ["out", "dist", "**/*.d.ts"]
 }
