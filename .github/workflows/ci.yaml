@@ -13,7 +13,6 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         vscode-version: [1.81.1, 1.83.1, 1.85.2, 1.86.0, 1.88.1, 1.91.1, 1.95.3]
-        node-version: [20.x, 22.x]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -21,7 +20,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
       - name: Install Node.js Dependencies
         run: npm install
       - name: Run Linux Tests
@@ -49,7 +48,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
       - name: Install Node.js Dependencies
         run: npm install
       - name: Run Linux Tests
