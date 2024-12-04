@@ -423,13 +423,15 @@ export class SlurmScheduler implements Scheduler {
             return job.outputFile; /* early exit if it's already defined */
         }
 
-        this.patchJobWithRuntimeMetadata(job);
-        if (job.outputFile) {
-            return job.outputFile;
-        } else {
+        try {
+            this.patchJobWithRuntimeMetadata(job);
+            if (!job.outputFile) {
+                throw new Error('Failed to get job output path.');
+            }
+        } catch (error) {
             vscode.window.showErrorMessage(`Failed to get job output path for job ${job.id}.`);
-            return undefined;
         }
+        return job.outputFile;
     }
 
     /**
@@ -450,13 +452,15 @@ export class SlurmScheduler implements Scheduler {
             return job.errorFile; /* early exit if it's already defined */
         }
 
-        this.patchJobWithRuntimeMetadata(job);
-        if (job.errorFile) {
-            return job.errorFile;
-        } else {
+        try {
+            this.patchJobWithRuntimeMetadata(job);
+            if (!job.errorFile) {
+                throw new Error('Failed to get job error path.');
+            }
+        } catch (error) {
             vscode.window.showErrorMessage(`Failed to get job error path for job ${job.id}.`);
-            return undefined;
         }
+        return job.errorFile;
     }
 }
 
