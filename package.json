@@ -56,14 +56,14 @@
         "icon": "$(debug-restart)"
       },
       {
-        "command": "job-dashboard.show-error",
-        "title": "Show Job Error",
-        "icon": "$(error)"
-      },
-      {
         "command": "job-dashboard.show-output",
         "title": "Show Job Output",
         "icon": "$(output)"
+      },
+      {
+        "command": "job-dashboard.show-error",
+        "title": "Show Job Error",
+        "icon": "$(bracket-error)"
       },
       {
         "command": "job-dashboard.show-source",
@@ -139,27 +139,27 @@
         {
           "command": "job-dashboard.cancel",
           "when": "view == job-dashboard && viewItem == jobItem",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "job-dashboard.cancel-and-resubmit",
           "when": "view == job-dashboard && viewItem == jobItem",
-          "group": "inline"
-        },
-        {
-          "command": "job-dashboard.show-error",
-          "when": "view == job-dashboard && viewItem == jobItem",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "job-dashboard.show-output",
           "when": "view == job-dashboard && viewItem == jobItem",
-          "group": "inline"
+          "group": "inline@3"
+        },
+        {
+          "command": "job-dashboard.show-error",
+          "when": "view == job-dashboard && viewItem == jobItem",
+          "group": "inline@4"
         },
         {
           "command": "job-dashboard.show-source",
           "when": "view == job-dashboard && viewItem == jobItem",
-          "group": "inline"
+          "group": "inline@5"
         },
         {
           "command": "submit-dashboard.submit",
