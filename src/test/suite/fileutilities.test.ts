@@ -6,6 +6,17 @@ import * as vscode from 'vscode';
 import * as fu from '../../fileutilities';
 
 suite('fileutilities.ts tests', () => {
+    test('openTextFileInEditor', () => {
+        {
+            const filePath = 'job1.sbatch';
+            assert.doesNotThrow(() => fu.openTextFileInEditor(filePath), 'openTextFileInEditor');
+        }
+        {
+            const filePathNotExists = 'job1.sbatch.notexists';
+            assert.doesNotThrow(() => fu.openTextFileInEditor(filePathNotExists), 'openTextFileInEditor');
+        }
+    });
+
     test('resolvePathRelativeToWorkspace', () => {
         {
             // absolute path

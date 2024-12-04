@@ -1,6 +1,27 @@
 import * as vscode from 'vscode';
 
 /**
+ * Opens a text file in the editor.
+ *
+ * @param fpath - The relative path to the file to be opened.
+ *
+ * This function resolves the given file path relative to the workspace,
+ * opens the text document, and then shows it in the editor. If there is
+ * an error during this process, an error message is displayed.
+ */
+export function openTextFileInEditor(fpath: string): void {
+    const absPath = resolvePathRelativeToWorkspace(fpath);
+    vscode.workspace.openTextDocument(absPath).then(
+        doc => {
+            vscode.window.showTextDocument(doc);
+        },
+        error => {
+            vscode.window.showErrorMessage(`Error opening file ${fpath}: ${error}`);
+        }
+    );
+}
+
+/**
  * Resolves the path relative to the workspace.
  * If the path is not an absolute path or a file URI, it is resolved relative to the workspace root.
  * If the path is already an absolute path or a file URI, it is returned as is.
