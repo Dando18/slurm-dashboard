@@ -99,13 +99,12 @@ GitHub](https://github.com/Dando18/slurm-dashboard/issues).
 
 See the [Changelog](/CHANGELOG.md) for the entire change history.
 
-### 0.0.13
+### 0.0.14
 
-- use glob patterns to find job scripts instead of extensions. The glob patterns
-  can be specified with `slurm-dashboard.submit-dashboard.jobScriptPatterns`.
-  The old setting, `slurm-dashboard.submit-dashboard.jobScriptExtensions`, is
-  now deprecated and will be removed in a future version.
-- collect node list data and display it in the job info display
+- add job error script button to quickly pull up the error output path of a 
+  running job
+- update and clean up documentation and ci
+- add [contributing guidelines](/CONTRIBUTING.md)
 
 ## Contributing
 
@@ -118,4 +117,4 @@ See the [contributing guidelines](CONTRIBUTING.md) for more info.
 
 Copyright Daniel Nichols 2024
 
-Slurm Dashboard is published under the [Apache 2.0 license](/LICENSE).
+Slurm Dashboard is published under the [Apache 2.0 license](/LICENSE.md).
