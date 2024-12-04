@@ -202,7 +202,6 @@ export class SlurmScheduler implements Scheduler {
         new SchedulerDataColumn('NodeList', 255),
         new SchedulerDataColumn('Partition', 255),
         new SchedulerDataColumn('QOS', 255),
-        new SchedulerDataColumn('STDOUT', 255),
         new SchedulerDataColumn('TimeLimit', 255),
         new SchedulerDataColumn('TimeUsed', 255),
         new SchedulerDataColumn('Command', 255), // command last since it can sometimes have spaces in it
