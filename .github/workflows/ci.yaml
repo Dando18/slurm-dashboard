@@ -23,7 +23,7 @@ jobs:
           node-version: 22.x
           cache: 'npm'
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Run Linux Tests
         if: runner.os == 'Linux'
         run: |
@@ -52,7 +52,7 @@ jobs:
           node-version: 22.x
           cache: 'npm'
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Run Linux Tests
         if: runner.os == 'Linux'
         run: |
@@ -79,7 +79,7 @@ jobs:
         with:
           node-version: 22.x
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Coverage
         run: |
           sh src/test/setup-slurm-wrapper.sh
@@ -100,7 +100,7 @@ jobs:
         with:
           node-version: 22.x
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Check Format
         run: npm run check-format
 
@@ -118,7 +118,7 @@ jobs:
         with:
           node-version: 22.x
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Package
         run: npm run package
       - name: Upload Release Artifact
