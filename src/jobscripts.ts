@@ -120,7 +120,7 @@ export class JobScriptProvider implements vscode.TreeDataProvider<JobScript> {
         const jobScriptExts = vscode.workspace
             .getConfiguration('slurm-dashboard')
             .get('submit-dashboard.jobScriptExtensions', ['.slurm', '.sbatch', '.job']);
-        /* c8 ignore next 6 */
+        /* c8 ignore next 7 */
         if (JSON.stringify(jobScriptExts) !== JSON.stringify(['.slurm', '.sbatch', '.job'])) {
             vscode.window.showWarningMessage(
                 'The slurm-dashboard.submit-dashboard.jobScriptExtensions setting has been modified, but ' +

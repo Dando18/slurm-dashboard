@@ -28,6 +28,7 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.queue, undefined);
             assert.strictEqual(job.batchFile, undefined);
             assert.strictEqual(job.outputFile, undefined);
+            assert.strictEqual(job.errorFile, undefined);
             assert.strictEqual(job.maxTime, undefined);
             assert.strictEqual(job.curTime, undefined);
         }
@@ -40,6 +41,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 0, 3600),
                 new WallTime(0, 0, 0, 1800)
             );
@@ -49,6 +51,7 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.queue, 'queue');
             assert.strictEqual(job.batchFile, 'batchFile');
             assert.strictEqual(job.outputFile, 'outputFile');
+            assert.strictEqual(job.errorFile, 'errorFile');
             assert.strictEqual(job.maxTime?.toSeconds(), 3600);
             assert.strictEqual(job.curTime?.toSeconds(), 1800);
         }
@@ -68,6 +71,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 0, 3600),
                 new WallTime(0, 0, 0, 1800)
             );
@@ -82,6 +86,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 15, 30)
             );
@@ -103,6 +108,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 0, 3600),
                 new WallTime(0, 0, 0, 1800)
             );
@@ -117,6 +123,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 15, 30)
             );
@@ -165,6 +172,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 0, 3600),
                 new WallTime(0, 0, 0, 1800)
             ),
@@ -176,6 +184,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 15, 30)
             ),
@@ -187,6 +196,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 0, 3600),
                 new WallTime(0, 0, 0, 0)
             ),
@@ -198,6 +208,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'batchFile',
                 'outputFile',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 15, 45)
             ),
@@ -387,6 +398,34 @@ suite('scheduler.ts tests', () => {
         assert.strictEqual(slurm.getJobOutputPath(queue[0]), 'job1.out');
         assert.strictEqual(slurm.getJobOutputPath(queue[1]), 'job2.out');
         assert.strictEqual(slurm.getJobOutputPath(queue[2]), 'job3.out');
+
+        // try again to test caching
+        assert.strictEqual(slurm.getJobOutputPath(queue[0]), 'job1.out');
+        assert.strictEqual(slurm.getJobOutputPath(queue[1]), 'job2.out');
+        assert.strictEqual(slurm.getJobOutputPath(queue[2]), 'job3.out');
+    });
+
+    test('Slurm :: getJobErrorPath', async function () {
+        /* skip if windows */
+        if (process.platform === 'win32') {
+            this.skip();
+        }
+
+        assert.doesNotThrow(async () => {
+            execSync('sreset');
+        });
+
+        const slurm = new scheduler.SlurmScheduler();
+        const queue = await slurm.getQueue();
+
+        assert.strictEqual(slurm.getJobErrorPath(queue[0]), 'job1.err');
+        assert.strictEqual(slurm.getJobErrorPath(queue[1]), 'job2.err');
+        assert.strictEqual(slurm.getJobErrorPath(queue[2]), 'job3.err');
+
+        // try again to check caching
+        assert.strictEqual(slurm.getJobErrorPath(queue[0]), 'job1.err');
+        assert.strictEqual(slurm.getJobErrorPath(queue[1]), 'job2.err');
+        assert.strictEqual(slurm.getJobErrorPath(queue[2]), 'job3.err');
     });
 
     test('Debug :: getQueue', () => {
@@ -399,6 +438,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'job1.sh',
                 'job1.out',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 12, 43)
             ),
@@ -410,6 +450,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'job2.sh',
                 'job2.out',
+                'errorFile',
                 new WallTime(0, 1, 30, 0),
                 new WallTime(0, 1, 28, 1)
             ),
@@ -421,6 +462,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'job3.sh',
                 'job3.out',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 1, 15)
             ),
@@ -432,6 +474,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'job4.sh',
                 'job4.out',
+                'errorFile',
                 new WallTime(0, 1, 20, 40),
                 new WallTime(0, 0, 0, 0)
             ),
@@ -443,6 +486,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'job5.sh',
                 'job5.out',
+                'errorFile',
                 new WallTime(1, 12, 0, 0),
                 new WallTime(0, 0, 0, 0)
             ),
@@ -454,6 +498,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'job6.sh',
                 'job6.out',
+                'errorFile',
                 new WallTime(0, 7, 0, 0),
                 new WallTime(0, 7, 0, 0)
             ),
@@ -465,6 +510,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'job7.sh',
                 'job7.out',
+                'errorFile',
                 new WallTime(0, 1, 30, 0),
                 new WallTime(0, 1, 30, 0)
             ),
@@ -476,6 +522,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'job8.sh',
                 'job8.out',
+                'errorFile',
                 new WallTime(0, 23, 59, 59),
                 new WallTime(0, 0, 0, 0)
             ),
@@ -487,6 +534,7 @@ suite('scheduler.ts tests', () => {
                 '[]',
                 'job9.sh',
                 'job9.out',
+                'errorFile',
                 new WallTime(0, 0, 5, 0),
                 new WallTime(0, 0, 0, 0)
             ),
@@ -521,6 +569,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'job1.sh',
                 'job1.out',
+                'errorFile',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 12, 43)
             )
@@ -534,6 +583,7 @@ suite('scheduler.ts tests', () => {
                 '[node1]',
                 'job2.sh',
                 'job2.out',
+                'errorFile',
                 new WallTime(0, 1, 30, 0),
                 new WallTime(0, 1, 28, 1)
             )
@@ -551,12 +601,22 @@ suite('scheduler.ts tests', () => {
         assert.doesNotThrow(() => debug.submitJob('job1.sh'));
     });
 
-    test('Debug :: getJobOutput', () => {
+    test('Debug :: getJobOutputPath', () => {
         let debug = new scheduler.Debug();
 
         debug.getQueue().then((jobs: scheduler.Job[]) => {
             jobs.forEach((job: scheduler.Job) => {
                 assert.strictEqual(job.outputFile, debug.getJobOutputPath(job));
+            });
+        });
+    });
+
+    test('Debug :: getJobErrorPath', () => {
+        let debug = new scheduler.Debug();
+
+        debug.getQueue().then((jobs: scheduler.Job[]) => {
+            jobs.forEach((job: scheduler.Job) => {
+                assert.strictEqual(job.errorFile, debug.getJobErrorPath(job));
             });
         });
     });
