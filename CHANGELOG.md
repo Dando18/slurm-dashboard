@@ -1,5 +1,12 @@
 # Change Log
 
+### 0.0.14
+
+- add job error script button to quickly pull up the error output path of a
+  running job
+- update and clean up documentation and ci
+- add [contributing guidelines](/CONTRIBUTING.md)
+
 ### 0.0.13
 
 - use glob patterns to find job scripts instead of extensions. The glob patterns
