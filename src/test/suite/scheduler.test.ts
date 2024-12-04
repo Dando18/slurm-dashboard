@@ -590,7 +590,7 @@ suite('scheduler.ts tests', () => {
         );
 
         debug.getQueue().then(res => {
-            assert.strictEqual(res.length, 6);
+            assert.strictEqual(res.length, 7, 'failed to cancel jobs');
             assert.ok(res.every(job => job.id !== '1' && job.id !== '2'));
         });
     });
