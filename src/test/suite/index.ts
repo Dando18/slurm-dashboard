@@ -13,7 +13,7 @@ export function run(): Promise<void> {
     const testsRoot = path.resolve(__dirname, '..');
 
     return new Promise((c, e) => {
-        globSync('**/**.test.js', { cwd: testsRoot }).forEach( (file) => {
+        globSync('**/**.test.js', { cwd: testsRoot }).forEach(file => {
             mocha.addFile(path.resolve(testsRoot, file));
         });
 
