@@ -28,6 +28,7 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.queue, undefined);
             assert.strictEqual(job.batchFile, undefined);
             assert.strictEqual(job.outputFile, undefined);
+            assert.strictEqual(job.errorFile, undefined);
             assert.strictEqual(job.maxTime, undefined);
             assert.strictEqual(job.curTime, undefined);
         }
@@ -50,6 +51,7 @@ suite('scheduler.ts tests', () => {
             assert.strictEqual(job.queue, 'queue');
             assert.strictEqual(job.batchFile, 'batchFile');
             assert.strictEqual(job.outputFile, 'outputFile');
+            assert.strictEqual(job.errorFile, 'errorFile');
             assert.strictEqual(job.maxTime?.toSeconds(), 3600);
             assert.strictEqual(job.curTime?.toSeconds(), 1800);
         }
