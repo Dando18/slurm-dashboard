@@ -2,7 +2,7 @@
 
 ### 0.0.14
 
-- add job error script button to quickly pull up the error output path of a 
+- add job error script button to quickly pull up the error output path of a
   running job
 - update and clean up documentation and ci
 - add [contributing guidelines](/CONTRIBUTING.md)
