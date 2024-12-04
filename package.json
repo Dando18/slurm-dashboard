@@ -56,6 +56,11 @@
         "icon": "$(debug-restart)"
       },
       {
+        "command": "job-dashboard.show-error",
+        "title": "Show Job Error",
+        "icon": "$(error)"
+      },
+      {
         "command": "job-dashboard.show-output",
         "title": "Show Job Output",
         "icon": "$(output)"
@@ -138,6 +143,11 @@
         },
         {
           "command": "job-dashboard.cancel-and-resubmit",
+          "when": "view == job-dashboard && viewItem == jobItem",
+          "group": "inline"
+        },
+        {
+          "command": "job-dashboard.show-error",
           "when": "view == job-dashboard && viewItem == jobItem",
           "group": "inline"
         },

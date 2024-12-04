@@ -248,6 +248,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
             this.cancelAndResubmit(jobItem)
         );
         vscode.commands.registerCommand('job-dashboard.show-output', (jobItem: JobItem) => this.showOutput(jobItem));
+        vscode.commands.registerCommand('job-dashboard.show-error', (jobItem: JobItem) => this.showError(jobItem));
         vscode.commands.registerCommand('job-dashboard.show-source', (jobItem: JobItem) => this.showSource(jobItem));
 
         this.initAutoRefresh();
@@ -327,6 +328,19 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
             openTextFileInEditor(fpath);
         } else {
             vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated output file.`);
+        }
+    }
+
+    /**
+     * Open the error output file for this job in a VSCode text window.
+     * @param jobItem
+     */
+    private showError(jobItem: JobItem): void {
+        const fpath = this.scheduler.getJobErrorPath(jobItem.job);
+        if (fpath) {
+            openTextFileInEditor(fpath);
+        } else {
+            vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated error file.`);
         }
     }
 

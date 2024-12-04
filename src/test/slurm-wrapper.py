@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 # Job wrapper class
 class Job:
-    def __init__(self, id, name, status, queue, nodeList, batchFile, outputFile, maxTime, curTime):
+    def __init__(self, id, name, status, queue, nodeList, batchFile, outputFile, errorFile, maxTime, curTime):
         self.id = id
         self.name = name
         self.status = status
@@ -38,16 +38,17 @@ class Job:
         self.nodeList = nodeList
         self.batchFile = batchFile
         self.outputFile = outputFile
+        self.errorFile = errorFile
         self.maxTime = maxTime
         self.curTime = curTime
 
     def __str__(self):
-        return f'{self.id} {self.name} {self.status} {self.queue} {self.nodeList} {self.batchFile} {self.outputFile} {self.maxTime} {self.curTime}'
+        return f'{self.id} {self.name} {self.status} {self.queue} {self.nodeList} {self.batchFile} {self.outputFile} {self.errorFile} {self.maxTime} {self.curTime}'
 
     @staticmethod
     def fromStr(s: str):
-        id, name, status, queue, nodeList, batchFile, outputFile, maxTime, curTime = s.split()
-        return Job(id, name, status, queue, nodeList, batchFile, outputFile, maxTime, curTime)
+        id, name, status, queue, nodeList, batchFile, outputFile, errorFile, maxTime, curTime = s.split()
+        return Job(id, name, status, queue, nodeList, batchFile, outputFile, errorFile, maxTime, curTime)
 
 
 def write_jobs(job_list):
@@ -66,7 +67,8 @@ def sbatch(script):
     max_id = max([int(job.id) for job in jobs])
     job_name = os.path.basename(script).split('.')[0]
     output = f"{job_name}-{max_id+1}.out"
-    job = Job(str(max_id+1), job_name, 'PENDING', '[]', 'batch', script, output, '00:00:00', '00:00:00')
+    error = f"{job_name}-{max_id+1}.err"
+    job = Job(str(max_id+1), job_name, 'PENDING', '[]', 'batch', script, output, error, '00:00:00', '00:00:00')
     jobs.append(job)
     write_jobs(jobs)
     print(f'Submitted batch job {job.id}')
@@ -78,7 +80,7 @@ def squeue(me=False, noheader=False, O=None):
 
     jobs = read_jobs()
     for j in jobs:
-        fields = [j.id, j.name, j.status, j.queue, j.nodeList, j.queue, j.outputFile, j.maxTime, j.curTime, j.batchFile]
+        fields = [j.id, j.name, j.status, j.nodeList, j.queue, j.queue, j.maxTime, j.curTime, j.batchFile]
         print('   '.join(fields))
 
 def scancel(jobid):
@@ -99,15 +101,16 @@ def scontrol_show(field, value):
         print(f'Partition={j.queue}')
         print(f'Command={j.batchFile}')
         print(f'StdOut={j.outputFile}')
+        print(f'StdErr={j.errorFile}')
         print(f'Timelimit={j.maxTime}')
 
 
 # reset data in file
 if args.command == 'sreset':
     jobs = [
-        Job('123456', 'job1', 'COMPLETED', 'batch', '[]', 'job1.sbatch', 'job1.out', '1-00:00:00', '01:37:16'),
-        Job('123457', 'job2', 'RUNNING', 'batch', '[node1]', 'job2.sbatch', 'job2.out', '06:00:00', '00:14:39'),
-        Job('123458', 'job3', 'PENDING', 'batch', '[]', 'more/job3.job', 'job3.out', '00:15:00', '00:00:00'),
+        Job('123456', 'job1', 'COMPLETED', 'batch', '[]', 'job1.sbatch', 'job1.out', 'job1.err', '1-00:00:00', '01:37:16'),
+        Job('123457', 'job2', 'RUNNING', 'batch', '[node1]', 'job2.sbatch', 'job2.out', 'job2.err', '06:00:00', '00:14:39'),
+        Job('123458', 'job3', 'PENDING', 'batch', '[]', 'more/job3.job', 'job3.out', 'job3.err', '00:15:00', '00:00:00'),
     ]
     write_jobs(jobs)
 elif args.command == 'sbatch':

@@ -27,6 +27,7 @@ export class Job {
         public nodeList?: string,
         public batchFile?: string,
         public outputFile?: string,
+        public errorFile?: string,
         public maxTime?: WallTime,
         public curTime?: WallTime
     ) {}
@@ -141,6 +142,14 @@ export interface Scheduler {
      * @returns The output path for the job or undefined if the job does not have an output file.
      */
     getJobOutputPath(job: Job): string | undefined;
+
+    /**
+     * Retrieve the error path for a job file. Is permitted to simply return
+     * job.errorFile. Returns undefined if the job does not have an error file.
+     * @param job The job for which to retrieve the error path.
+     * @returns The error path for the job or undefined if the job does not have an error file.
+     */
+    getJobErrorPath(job: Job): string | undefined;
 }
 
 /**
@@ -343,6 +352,7 @@ export class SlurmScheduler implements Scheduler {
                 results['NodeList'],
                 results['Command'],
                 undefined /* let this be filled in by getJobOutputPath later */,
+                undefined /* error path is also patched later */,
                 timeLimit,
                 timeUsed
             );
@@ -350,6 +360,55 @@ export class SlurmScheduler implements Scheduler {
         });
 
         return jobs;
+    }
+
+    /**
+     * Retrieves runtime metadata for a given job by executing the `scontrol show job` command.
+     *
+     * @param job - The job object containing the job ID.
+     * @returns A record containing key-value pairs of the job's runtime metadata.
+     * @throws Will throw an error if scontrol command fails
+     */
+    private getJobRuntimeMetadata(job: Job): Record<string, any> {
+        const metadata: Record<string, any> = {};
+
+        const command = `scontrol show job ${job.id}`;
+        const output = execSync(command).toString().trim();
+        const lines = output.split('\n');
+        for (let line of lines) {
+            const pairs = line.split(/\s+/);
+            for (let pair of pairs) {
+                const [key, value] = pair.split('=');
+                if (key && value) {
+                    metadata[key.trim()] = value.trim();
+                }
+            }
+        }
+
+        return metadata;
+    }
+
+    /**
+     * Patches the given job with runtime metadata.
+     *
+     * @param job - The job object to be patched.
+     * @param force - Optional. If true, forces the patching even if the job already has output and error files. Defaults to false.
+     */
+    private patchJobWithRuntimeMetadata(job: Job, force: boolean = false): void {
+        /* early exit if we already have all the fields */
+        if (!force && job.outputFile && job.errorFile) {
+            return;
+        }
+
+        const metadata = this.getJobRuntimeMetadata(job);
+
+        if (metadata['StdOut']) {
+            job.outputFile = metadata['StdOut'];
+        }
+
+        if (metadata['StdErr']) {
+            job.errorFile = metadata['StdErr'];
+        }
     }
 
     /**
@@ -361,42 +420,42 @@ export class SlurmScheduler implements Scheduler {
      * @returns The resolved stdout path or undefined if the job does not have an output file.
      */
     public getJobOutputPath(job: Job): string | undefined {
-        /* early exit if it's already defined */
         if (job.outputFile) {
-            return job.outputFile;
+            return job.outputFile; /* early exit if it's already defined */
         }
 
-        const command = `scontrol show job ${job.id}`;
+        this.patchJobWithRuntimeMetadata(job);
+        if (job.outputFile) {
+            return job.outputFile;
+        } else {
+            vscode.window.showErrorMessage(`Failed to get job output path for job ${job.id}.`);
+            return undefined;
+        }
+    }
 
-        try {
-            const output = execSync(command).toString().trim();
+    /**
+     * Retrieves the error file path for a given job.
+     *
+     * This method first checks if the job's error file path is already defined.
+     * If it is, it returns the path immediately. If not, it attempts to patch
+     * the job with runtime metadata to retrieve the error file path.
+     *
+     * If the error file path is still not defined after patching, an error message
+     * is displayed to the user and `undefined` is returned.
+     *
+     * @param job - The job for which to retrieve the error file path.
+     * @returns The error file path as a string if available, otherwise `undefined`.
+     */
+    public getJobErrorPath(job: Job): string | undefined {
+        if (job.errorFile) {
+            return job.errorFile; /* early exit if it's already defined */
+        }
 
-            /* find line that starts with StdOut */
-            const lines = output.split('\n');
-            let stdoutLine: string | undefined = undefined;
-            for (let line of lines) {
-                if (line.trim().startsWith('StdOut=')) {
-                    stdoutLine = line.trim();
-                    break;
-                }
-            }
-
-            /* if we didn't find a line, return undefined */
-            if (!stdoutLine) {
-                throw new Error(`Failed to find stdout line in output: ${output}`);
-            }
-
-            /* extract path from line: StdOut=/path/to/file */
-            const parts = stdoutLine.split('=');
-            if (parts.length < 2) {
-                throw new Error(`Failed to parse stdout line: ${stdoutLine}`);
-            }
-            const fpath = parts[1].trim();
-
-            job.outputFile = fpath;
-            return fpath;
-        } catch (error) {
-            vscode.window.showErrorMessage(`Failed to get job output path for job ${job.id}.\nError: ${error}`);
+        this.patchJobWithRuntimeMetadata(job);
+        if (job.errorFile) {
+            return job.errorFile;
+        } else {
+            vscode.window.showErrorMessage(`Failed to get job error path for job ${job.id}.`);
             return undefined;
         }
     }
@@ -408,15 +467,15 @@ export class Debug implements Scheduler {
      */
     // prettier-ignore
     private jobs: Job[] = [
-        new Job("1", "job1", "RUNNING", "debug", '[node1]', "job1.sh", "job1.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
-        new Job("2", "job2", "RUNNING", "debug", '[node1]', "job2.sh", "job2.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
-        new Job("3", "job3", "RUNNING", "debug", '[node1]', "job3.sh", "job3.out", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
-        new Job("4", "job4", "PENDING", "debug", '[]', "job4.sh", "job4.out", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
-        new Job("5", "job5", "PENDING", "debug", '[]', "job5.sh", "job5.out", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
-        new Job("6", "job6", "COMPLETED", "debug", '[]', "job6.sh", "job6.out", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
-        new Job("7", "job7", "TIMEOUT", "debug", '[]', "job7.sh", "job7.out", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
-        new Job("8", "job8", "CANCELLED", "debug", '[]', "job8.sh", "job8.out", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
-        new Job("9", "job9", "FAILED", "debug", '[]', "job9.sh", "job9.out", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
+        new Job("1", "job1", "RUNNING", "debug", '[node1]', "job1.sh", "job1.out", "job1.err", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 12, 43)),
+        new Job("2", "job2", "RUNNING", "debug", '[node1]', "job2.sh", "job2.out", "job2.err", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 28, 1)),
+        new Job("3", "job3", "RUNNING", "debug", '[node1]', "job3.sh", "job3.out", "job3.err", new WallTime(0, 0, 30, 0), new WallTime(0, 0, 1, 15)),
+        new Job("4", "job4", "PENDING", "debug", '[]', "job4.sh", "job4.out", "job4.err", new WallTime(0, 1, 20, 40), new WallTime(0, 0, 0, 0)),
+        new Job("5", "job5", "PENDING", "debug", '[]', "job5.sh", "job5.out", "job5.err", new WallTime(1, 12, 0, 0), new WallTime(0, 0, 0, 0)),
+        new Job("6", "job6", "COMPLETED", "debug", '[]', "job6.sh", "job6.out", "job6.err", new WallTime(0, 7, 0, 0), new WallTime(0, 7, 0, 0)),
+        new Job("7", "job7", "TIMEOUT", "debug", '[]', "job7.sh", "job7.out", "job7.err", new WallTime(0, 1, 30, 0), new WallTime(0, 1, 30, 0)),
+        new Job("8", "job8", "CANCELLED", "debug", '[]', "job8.sh", "job8.out", "job8.err", new WallTime(0, 23, 59, 59), new WallTime(0, 0, 0, 0)),
+        new Job("9", "job9", "FAILED", "debug", '[]', "job9.sh", "job9.out", "job9.err", new WallTime(0, 0, 5, 0), new WallTime(0, 0, 0, 0)),
     ];
 
     /**
@@ -451,6 +510,15 @@ export class Debug implements Scheduler {
      */
     public getJobOutputPath(job: Job): string | undefined {
         return job.outputFile;
+    }
+
+    /**
+     * For the debug scheduler, just returns the job's error file.
+     * @param job The job for which to retrieve the error path.
+     * @returns The error path for the job or undefined if the job does not have an error file.
+     */
+    public getJobErrorPath(job: Job): string | undefined {
+        return job.errorFile;
     }
 }
 

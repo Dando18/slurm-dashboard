@@ -37,6 +37,7 @@ suite('jobs.ts tests', () => {
                     '[]',
                     'batch',
                     'out',
+                    'err',
                     new WallTime(0, 0, 30, 0),
                     new WallTime(0, 0, 15, 30)
                 ),
@@ -61,7 +62,7 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(
                 /* prettier-ignore */
-                new Job('2','Test Job', 'RUNNING', 'queue', '[node1]', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
+                new Job('2','Test Job', 'RUNNING', 'queue', '[node1]', 'batch', 'out', 'err', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             const iconPath = jobItem.getIconPath();
             assert.ok(iconPath !== undefined);
@@ -110,7 +111,7 @@ suite('jobs.ts tests', () => {
         {
             const jobItem = new jobs.JobItem(
                 /* prettier-ignore */
-                new Job('2', 'Test Job', 'RUNNING', 'queue', '[node1]', 'batch', 'out', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
+                new Job('2', 'Test Job', 'RUNNING', 'queue', '[node1]', 'batch', 'out', 'err', new WallTime(0, 0, 30, 0), new WallTime(0, 0, 29, 30))
             );
             assert.deepEqual(jobItem.getIconPath(), new vscode.ThemeIcon('play'));
         }
@@ -167,6 +168,7 @@ suite('jobs.ts tests', () => {
                     '[]',
                     'batch',
                     'out',
+                    'err',
                     new WallTime(0, 0, 30, 0),
                     new WallTime(0, 0, 15, 30)
                 ),
@@ -203,6 +205,7 @@ suite('jobs.ts tests', () => {
                 '[node1]',
                 'batch',
                 'out',
+                'err',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 15, 30)
             );
@@ -222,6 +225,7 @@ suite('jobs.ts tests', () => {
                 '[]',
                 'batch',
                 'out',
+                'err',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 15, 30)
             );
@@ -241,6 +245,7 @@ suite('jobs.ts tests', () => {
                 '[node1]',
                 'batch',
                 'out',
+                'err',
                 new WallTime(0, 0, 30, 0),
                 new WallTime(0, 0, 29, 50)
             );
@@ -416,16 +421,86 @@ suite('jobs.ts tests', () => {
     });
 
     test('commands :: job-dashboard.show-output', async function () {
-        assert.doesNotThrow(async () => {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
-            await vscode.commands.executeCommand('job-dashboard.show-output', jobItem);
-        });
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', '', 'job1.out', 'job1.err'),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-output', jobItem);
+            });
+        }
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', '', 'job1.out.fake', 'job1.err'),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-output', jobItem);
+            });
+        }
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', '', undefined, 'job1.err'),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-output', jobItem);
+            });
+        }
+    });
+
+    test('commands :: job-dashboard.show-error', async function () {
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', '', 'job1.out', 'job1.err'),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-error', jobItem);
+            });
+        }
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', '', 'job1.out', 'job1.err.fake'),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-error', jobItem);
+            });
+        }
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', '', 'job1.out', undefined),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-error', jobItem);
+            });
+        }
     });
 
     test('commands :: job-dashboard.show-source', async function () {
-        assert.doesNotThrow(async () => {
-            const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING'), false);
-            await vscode.commands.executeCommand('job-dashboard.show-source', jobItem);
-        });
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING', '', '', 'job1.sbatch'), false);
+                await vscode.commands.executeCommand('job-dashboard.show-source', jobItem);
+            });
+        }
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(
+                    new Job('1', 'Test Job', 'RUNNING', '', '', 'job1.sbatch.fake'),
+                    false
+                );
+                await vscode.commands.executeCommand('job-dashboard.show-source', jobItem);
+            });
+        }
+        {
+            assert.doesNotThrow(async () => {
+                const jobItem = new jobs.JobItem(new Job('1', 'Test Job', 'RUNNING', '', '', undefined), false);
+                await vscode.commands.executeCommand('job-dashboard.show-source', jobItem);
+            });
+        }
     });
 });
