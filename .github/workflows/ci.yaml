@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        vscode-version: [1.81.1, 1.83.1, 1.85.2, 1.86.0, 1.88.1, 1.91.1]
+        vscode-version: [1.81.1, 1.83.1, 1.85.2, 1.86.0, 1.88.1, 1.91.1, 1.95.3]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -20,9 +20,10 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
+          cache: 'npm'
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Run Linux Tests
         if: runner.os == 'Linux'
         run: |
@@ -48,9 +49,10 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
+          cache: 'npm'
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Run Linux Tests
         if: runner.os == 'Linux'
         run: |
@@ -75,9 +77,9 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Coverage
         run: |
           sh src/test/setup-slurm-wrapper.sh
@@ -96,9 +98,9 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Check Format
         run: npm run check-format
 
@@ -114,9 +116,9 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
       - name: Install Node.js Dependencies
-        run: npm install
+        run: npm ci
       - name: Package
         run: npm run package
       - name: Upload Release Artifact
