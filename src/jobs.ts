@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Job, Scheduler, sortJobs } from './scheduler';
-import { resolvePathRelativeToWorkspace } from './fileutilities';
+import { resolvePathRelativeToWorkspace, openTextFileInEditor } from './fileutilities';
 
 /**
  * Represents an information item in the tree view. These are used to display
@@ -324,14 +324,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
     private showOutput(jobItem: JobItem): void {
         const fpath = this.scheduler.getJobOutputPath(jobItem.job);
         if (fpath) {
-            vscode.workspace.openTextDocument(resolvePathRelativeToWorkspace(fpath)).then(
-                doc => {
-                    vscode.window.showTextDocument(doc);
-                },
-                error => {
-                    vscode.window.showErrorMessage(`Failed to open output file ${jobItem.job.outputFile}.\n${error}`);
-                }
-            );
+            openTextFileInEditor(fpath);
         } else {
             vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated output file.`);
         }
@@ -343,15 +336,8 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
      */
     private showSource(jobItem: JobItem): void {
         if (jobItem.job.batchFile) {
-            const fpath = resolvePathRelativeToWorkspace(jobItem.job.batchFile);
-            vscode.workspace.openTextDocument(fpath).then(
-                doc => {
-                    vscode.window.showTextDocument(doc);
-                },
-                error => {
-                    vscode.window.showErrorMessage(`Failed to open batch file ${jobItem.job.batchFile}.\n${error}`);
-                }
-            );
+            const fpath = resolvePathRelativeToWorkspace(jobItem.job.batchFile).toString();
+            openTextFileInEditor(fpath);
         } else {
             vscode.window.showErrorMessage(`Job ${jobItem.job.id} has no associated batch file.`);
         }
