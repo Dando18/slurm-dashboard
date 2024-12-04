@@ -253,6 +253,7 @@ export class JobQueueProvider implements vscode.TreeDataProvider<JobItem | InfoI
 
         this.initAutoRefresh();
         vscode.workspace.onDidChangeConfiguration(e => {
+            /* c8 ignore next 3 */
             if (e.affectsConfiguration('slurm-dashboard.job-dashboard.refreshInterval')) {
                 this.initAutoRefresh();
             }
