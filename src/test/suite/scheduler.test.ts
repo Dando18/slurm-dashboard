@@ -377,6 +377,15 @@ suite('scheduler.ts tests', () => {
         const newQueue = await slurm.getQueue();
         assert.strictEqual(newQueue.length, queue.length + 1);
 
+        const jobScriptWithParentheses = 'job(log(kd)=1).sbatch';
+        assert.doesNotThrow(() => {
+            slurm.submitJob(jobScriptWithParentheses);
+        });
+
+        const newQueueWithParentheses = await slurm.getQueue();
+        assert.strictEqual(newQueueWithParentheses.length, newQueue.length + 1);
+        assert.ok(newQueueWithParentheses.some(j => j.batchFile === jobScriptWithParentheses));
+
         assert.doesNotThrow(() => {
             slurm.submitJob('not-a-real-file.sh');
         });
