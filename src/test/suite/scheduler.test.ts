@@ -359,14 +359,14 @@ suite('scheduler.ts tests', () => {
             this.skip();
         }
 
-        assert.doesNotThrow(async () => {
+        assert.doesNotThrow(() => {
             execSync('sreset');
-
-            /* since slurm wrapper script uses a tmp file, we have to keep a consistent working directory */
-            await vscode.workspace
-                .getConfiguration('slurm-dashboard')
-                .update('setJobWorkingDirectoryToScriptDirectory', false);
         });
+
+        /* since slurm wrapper script uses a tmp file, we have to keep a consistent working directory */
+        await vscode.workspace
+            .getConfiguration('slurm-dashboard')
+            .update('setJobWorkingDirectoryToScriptDirectory', false);
 
         const slurm = new scheduler.SlurmScheduler();
         const queue = await slurm.getQueue();
