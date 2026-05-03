@@ -299,5 +299,11 @@
     "typescript": "^5.7.2",
     "@vscode/test-electron": "^2.4.1",
     "@vscode/vsce": "^3.2.1"
+  },
+  "overrides": {
+    "mocha": {
+      "diff": "^8.0.3",
+      "serialize-javascript": "^7.0.5"
+    }
   }
 }
