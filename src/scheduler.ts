@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { execSync, exec } from 'child_process';
+import { execSync, exec, execFileSync } from 'child_process';
 import { WallTime } from './time';
 import { getParentDirectory } from './fileutilities';
 import { returnIfNoThrow } from './util';
@@ -268,7 +268,7 @@ export class SlurmScheduler implements Scheduler {
                 execOptions['cwd'] = cwd;
             }
 
-            execSync(`sbatch ${jobScriptPath}`, execOptions);
+            execFileSync('sbatch', [jobScriptPath], execOptions);
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to submit job ${jobScript}.\nError: ${error}`);
         }
