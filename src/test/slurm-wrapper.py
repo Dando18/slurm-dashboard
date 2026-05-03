@@ -7,7 +7,8 @@ import sys
 parser = ArgumentParser()
 parser.add_argument('--jobfile', type=str, default='/tmp/.jobfile')
 subparsers = parser.add_subparsers(dest='command')
-subparsers.add_parser('sreset')
+sreset_parser = subparsers.add_parser('sreset')
+sreset_parser.add_argument('--jobs', type=int, default=3)
 
 sbatch_parser = subparsers.add_parser('sbatch')
 sbatch_parser.add_argument('script', type=str)
@@ -112,6 +113,23 @@ if args.command == 'sreset':
         Job('123457', 'job2', 'RUNNING', 'batch', '[node1]', 'job2.sbatch', 'job2.out', 'job2.err', '06:00:00', '00:14:39'),
         Job('123458', 'job3', 'PENDING', 'batch', '[]', 'more/job3.job', 'job3.out', 'job3.err', '00:15:00', '00:00:00'),
     ]
+    for i in range(3, args.jobs):
+        job_id = 123456 + i
+        script = f"many-jobs/job{job_id}-{'x' * 240}.sbatch"
+        jobs.append(
+            Job(
+                str(job_id),
+                f"job{job_id}",
+                'PENDING',
+                'batch',
+                '[]',
+                script,
+                f"job{job_id}.out",
+                f"job{job_id}.err",
+                '00:15:00',
+                '00:00:00',
+            )
+        )
     write_jobs(jobs)
 elif args.command == 'sbatch':
     sbatch(args.script)
@@ -124,4 +142,3 @@ elif args.command == 'scontrol':
         scontrol_show(args.field, args.value)
     else:
         raise NotImplementedError
-
