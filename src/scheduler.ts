@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { execSync, exec, execFileSync } from 'child_process';
+import { execSync, execFileSync, spawn } from 'child_process';
 import { WallTime } from './time';
 import { getParentDirectory } from './fileutilities';
 import { returnIfNoThrow } from './util';
@@ -300,12 +300,21 @@ export class SlurmScheduler implements Scheduler {
     private getQueueOutput(): Thenable<string | undefined> {
         const columnsString = this.columns.join(',');
         const userFilterArg = this.getUserFilterArgForSqueue();
-        const command = `squeue ${userFilterArg} --noheader -O ${columnsString}`;
 
         return new Promise((resolve, reject) => {
-            exec(command, (error, stdout, stderr) => {
-                if (error) {
-                    reject(error);
+            const squeue = spawn('squeue', [userFilterArg, '--noheader', '-O', columnsString]);
+            const stdoutChunks: Buffer[] = [];
+            const stderrChunks: Buffer[] = [];
+
+            squeue.stdout.on('data', chunk => stdoutChunks.push(chunk));
+            squeue.stderr.on('data', chunk => stderrChunks.push(chunk));
+            squeue.on('error', error => reject(error));
+            squeue.on('close', code => {
+                const stdout = Buffer.concat(stdoutChunks).toString();
+                const stderr = Buffer.concat(stderrChunks).toString();
+
+                if (code !== 0) {
+                    reject(new Error(stderr || `squeue exited with code ${code}`));
                 } else if (stderr) {
                     reject(stderr);
                 } else {

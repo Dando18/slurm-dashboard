@@ -325,6 +325,22 @@ suite('scheduler.ts tests', () => {
         }
     });
 
+    test('Slurm :: getQueue large output', async function () {
+        /* skip if windows */
+        if (process.platform === 'win32') {
+            this.skip();
+        }
+
+        const jobCount = 5000;
+        assert.doesNotThrow(() => {
+            execSync(`sreset --jobs ${jobCount}`);
+        });
+
+        const slurm = new scheduler.SlurmScheduler();
+        const queue = await slurm.getQueue();
+        assert.strictEqual(queue.length, jobCount);
+    });
+
     test('Slurm :: cancelJob', async function () {
         /* skip if windows */
         if (process.platform === 'win32') {
